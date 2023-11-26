@@ -1,3 +1,10 @@
-package data_link_layer_protocols_simulation;
+package networks_project;
 
 @license(LGPL);
+//
+// TODO documentation
+//
+network Network
+{
+}
+
