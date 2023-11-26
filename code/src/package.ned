@@ -1,4 +1,4 @@
-package networks_project;
+package netwroks_project;
 
 @license(LGPL);
 //
@@ -6,5 +6,6 @@ package networks_project;
 //
 network Network
 {
+    @display("bgb=593,356");
 }
 

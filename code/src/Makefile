@@ -1,12 +1,12 @@
 #
-# OMNeT++/OMNEST Makefile for networks_project
+# OMNeT++/OMNEST Makefile for netwroks_project
 #
 # This file was generated with the command:
 #  opp_makemake -f --deep
 #
 
 # Name of target to be created (-o option)
-TARGET = networks_project$(D)$(EXE_SUFFIX)
+TARGET = netwroks_project$(D)$(EXE_SUFFIX)
 TARGET_DIR = .
 
 # User interface (uncomment one) (-u option)
