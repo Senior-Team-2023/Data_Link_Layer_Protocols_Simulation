@@ -1,3 +1,3 @@
-package data_link_layer_protocols_simulation.simulations;
+package networks_project.simulations;
 
 @license(LGPL);
