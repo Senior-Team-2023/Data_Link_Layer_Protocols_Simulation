@@ -1,12 +1,12 @@
 #
-# OMNeT++/OMNEST Makefile for netwroks_project
+# OMNeT++/OMNEST Makefile for Networks_project
 #
 # This file was generated with the command:
 #  opp_makemake -f --deep
 #
 
 # Name of target to be created (-o option)
-TARGET = netwroks_project$(D)$(EXE_SUFFIX)
+TARGET = Networks_project$(D)$(EXE_SUFFIX)
 TARGET_DIR = .
 
 # User interface (uncomment one) (-u option)
@@ -30,10 +30,11 @@ PROJECTRELATIVE_PATH = src
 O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 
 # Object files for local .cc, .msg and .sm files
-OBJS =
+OBJS = $O/coordinator.o $O/Node.o $O/myMessage_m.o
 
 # Message files
-MSGFILES =
+MSGFILES = \
+    myMessage.msg
 
 # SM files
 SMFILES =

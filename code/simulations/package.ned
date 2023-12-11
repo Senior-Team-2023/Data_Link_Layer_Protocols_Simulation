@@ -1,10 +1,3 @@
-package netwroks_project.simulations;
+package networks_project.simulations;
 
 @license(LGPL);
-//
-// TODO documentation
-//
-network Network
-{
-}
-
