@@ -148,7 +148,21 @@ void Node::handleMessage(cMessage *msg)
 
     if (isSender == true && mmsg->getFrame_type() == '1' && !msg->isSelfMessage()) // ack message from reciever
     {
-        EV << "RECIEVED ACK " << simTime() << " " << messgs_in_window << endl;
+
+        EV << "ACK RECIEVED " << mmsg->getAck_nack_numb() << endl;
+        // if (mmsg->getAck_nack_numb() == -1)
+        // {
+        //     EV << "TIME " << simTime() << "RECIEVED ACK " << messgs_in_window << endl;
+        //     messgs_in_window--;
+        //     start++;
+        //     start %= WS;
+        //     if (start == end)
+        //     {
+        //         start = -1;
+        //         end = -1;
+        //     }
+        // }
+        // else
         while ((start % WS) < mmsg->getAck_nack_numb())
 
         {
@@ -156,6 +170,7 @@ void Node::handleMessage(cMessage *msg)
             start %= WS;
             messgs_in_window--;
         }
+        EV << "RECIEVED ACK " << simTime() << " " << messgs_in_window << endl;
     }
 
     if (mmsg->getFrame_type() == '2' && !msg->isSelfMessage()) // the message is data recieved
