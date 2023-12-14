@@ -31,8 +31,11 @@ void Node::initialize()
     // Reading the file
     not_processing = true;
     current_index = 0;
-    std::ifstream inputFile;
+    messgs_in_window = 0;
 
+    std::ifstream inputFile;
+    current_seq_numb = -1;
+    first_seq_numb = -1;
     if (strcmp(this->getName(), "node0") == 0)
     {
 
@@ -137,20 +140,39 @@ void Node::handleMessage(cMessage *msg)
         isSender = true;
     }
 
+    if (isSender == true && mmsg->getFrame_type() == '1' && !msg->isSelfMessage()) // ack message from reciever
+    {
+        int numb_of_messages_to_be_minused = 0;
+        int last_ack = mmsg->getAck_nack_numb() - 1;
+        if (last_ack >= first_seq_numb)
+        {
+            numb_of_messages_to_be_minused = last_ack - first_seq_numb + 1;
+            messgs_in_window -= numb_of_messages_to_be_minused;
+            first_seq_numb = last_ack;
+        }
+        else
+        {
+            numb_of_messages_to_be_minused = last_ack + 1 + ws - first_seq_numb;
+            messgs_in_window -= numb_of_messages_to_be_minused;
+            first_seq_numb = last_ack;
+        }
+    }
+
     if (mmsg->getFrame_type() == '2' && !msg->isSelfMessage()) // the message is data recieved
     {
+
         bool acknowledge;
         std::string payload = decode(mmsg->getPayload(), mmsg->getTrailer(), acknowledge);
         MyMessage_Base *ack = new MyMessage_Base();
         if (acknowledge == true)
         {
             ack->setFrame_type('1'); // ack
-            acl->setAck_nack_numb('');
+            ack->setAck_nack_numb((mmsg->getHeader() + 1) % ws);
         }
         else if (acknowledge == false)
         {
             ack->setFrame_type('0'); // nack
-            acl->setAck_nack_numb('');
+            ack->setAck_nack_numb(mmsg->getHeader());
         }
         // send(ack, "ino$o");
 
@@ -175,7 +197,7 @@ void Node::handleMessage(cMessage *msg)
         }
     }
 
-    if (isSender == true && current_index < lines.size() && not_processing == true && current_index - earliest_unack_index < ws)
+    if (isSender == true && current_index < lines.size() && not_processing == true && messgs_in_window < ws)
     {
 
         std::istringstream iss(lines[current_index]);
@@ -189,11 +211,17 @@ void Node::handleMessage(cMessage *msg)
         newMesg->setTrailer(checksum);
         newMesg->setFrame_type('2');
         newMesg->setName("processing_done");
+        newMesg->setHeader(current_seq_numb);
 
-        //         int ptValue = par("PT").intValue();
-        //         EV << " PT " << simTime() + ptValue << endl;
+        if (first_seq_numb == -1)
+            first_seq_numb = 0;
 
-        EV << "time to start processing " << simTime() << endl;
+        current_seq_numb++;
+        current_seq_numb %= ws;
+        messgs_in_window++;
+
+        EV
+            << "time to start processing " << simTime() << endl;
         current_index++;
         // EV << " sent message " << newMesg->getPayload() << endl;
         not_processing = false;

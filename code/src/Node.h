@@ -33,9 +33,13 @@ class Node : public cSimpleModule
 protected:
   std::vector<std::string> lines;
 
-  int earliest_unack_index;
+  int first_seq_numb;
+  int messgs_in_window;
+  int current_seq_numb;
+
   bool isSender;
   bool not_processing;
+
   int current_index;
   virtual void initialize();
   virtual void handleMessage(cMessage *msg);

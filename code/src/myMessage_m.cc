@@ -271,12 +271,12 @@ void MyMessage_Base::setFrame_type(char frame_type)
     this->frame_type = frame_type;
 }
 
-char MyMessage_Base::getAck_nack_numb() const
+int MyMessage_Base::getAck_nack_numb() const
 {
     return this->ack_nack_numb;
 }
 
-void MyMessage_Base::setAck_nack_numb(char ack_nack_numb)
+void MyMessage_Base::setAck_nack_numb(int ack_nack_numb)
 {
     this->ack_nack_numb = ack_nack_numb;
 }
@@ -411,7 +411,7 @@ const char *MyMessageDescriptor::getFieldTypeString(int field) const
         "string",
         "char",
         "char",
-        "char",
+        "int",
     };
     return (field>=0 && field<5) ? fieldTypeStrings[field] : nullptr;
 }

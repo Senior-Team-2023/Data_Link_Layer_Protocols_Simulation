@@ -24,7 +24,7 @@ packet MyMessage {
     string payload;
     char trailer;//parity
     char frame_type;//type 0 1 2 3 
-    char ack_nack_numb;
+      int ack_nack_numb;
 // Header: the data sequence number.
 // Payload: the message contents after byte stuffing (in characters).
 // Trailer: the parity byte. 

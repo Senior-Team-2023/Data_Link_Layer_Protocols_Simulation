@@ -33,7 +33,7 @@
  *     string payload;
  *     char trailer;//parity
  *     char frame_type;//type 0 1 2 3 
- *     char ack_nack_numb;
+ *     int ack_nack_numb;
  * // Header: the data sequence number.
  * // Payload: the message contents after byte stuffing (in characters).
  * // Trailer: the parity byte. 
@@ -74,7 +74,7 @@ class MyMessage_Base : public ::omnetpp::cPacket
     ::omnetpp::opp_string payload;
     char trailer;
     char frame_type;
-    char ack_nack_numb;
+    int ack_nack_numb;
 
   private:
     void copy(const MyMessage_Base& other);
@@ -83,7 +83,7 @@ class MyMessage_Base : public ::omnetpp::cPacket
     // protected and unimplemented operator==(), to prevent accidental usage
     bool operator==(const MyMessage_Base&);
     // make constructors protected to avoid instantiation
-//    MyMessage_Base(const char *name=nullptr, short kind=0);
+
     MyMessage_Base(const MyMessage_Base& other);
     // make assignment operator protected to force the user override it
     MyMessage_Base& operator=(const MyMessage_Base& other);
@@ -91,10 +91,8 @@ class MyMessage_Base : public ::omnetpp::cPacket
   public:
     MyMessage_Base(const char *name=nullptr, short kind=0);
     virtual ~MyMessage_Base();
-    virtual MyMessage_Base *dup() const override
-    {
-        return new MyMessage_Base(*this);
-}
+
+    virtual MyMessage_Base *dup() const override {return new MyMessage_Base(*this);}
     virtual void parsimPack(omnetpp::cCommBuffer *b) const override;
     virtual void parsimUnpack(omnetpp::cCommBuffer *b) override;
 
@@ -107,8 +105,8 @@ class MyMessage_Base : public ::omnetpp::cPacket
     virtual void setTrailer(char trailer);
     virtual char getFrame_type() const;
     virtual void setFrame_type(char frame_type);
-    virtual char getAck_nack_numb() const;
-    virtual void setAck_nack_numb(char ack_nack_numb);
+    virtual int getAck_nack_numb() const;
+    virtual void setAck_nack_numb(int ack_nack_numb);
 };
 
 

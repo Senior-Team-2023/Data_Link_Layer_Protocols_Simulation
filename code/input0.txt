@@ -1,2 +1,8 @@
-1010 A flower, sometimes 
-0000 known as a bloom or blossom in flowering plants
+1010 zeroth 
+0000 first
+0000 second
+0000 third
+0000 fourth
+0000 fifth
+0000 sixth
+0000 seventh
