@@ -12,25 +12,25 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 //
-
-#include "Node.h"
-
-#define ws 3
+#define WS 3
 #define TO 10
 #define TD 1.0
 #define ED 4.0
 #define DD 0.1
 #define PT 0.5
 #define LP 0
+#include "Node.h"
+
 Define_Module(Node);
 
 void Node::initialize()
 {
-
     isSender = false;
     // Reading the file
+    start = -1;
+    end = -1;
     not_processing = true;
-    current_index = 0;
+    current_index = -1;
     messgs_in_window = 0;
 
     std::ifstream inputFile;
@@ -138,38 +138,23 @@ void Node::handleMessage(cMessage *msg)
     if (mmsg->getFrame_type() == '3') // the message is for start sending from coordinator
     {
         isSender = true;
+
+        current_index = 0;
+        for (int i = 0; i < WS; i++)
+        {
+            window_messages.push_back(nullptr);
+        }
     }
 
     if (isSender == true && mmsg->getFrame_type() == '1' && !msg->isSelfMessage()) // ack message from reciever
     {
+        EV << "RECIEVED ACK " << simTime() << " " << messgs_in_window << endl;
+        while ((start % WS) < mmsg->getAck_nack_numb())
 
-        int numb_of_messages_to_be_minused = 0;
-        int last_ack = mmsg->getAck_nack_numb() - 1;
-        if (last_ack == -1)
         {
-
-            EV << "IN HELLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL 0" << endl;
-            numb_of_messages_to_be_minused = first_seq_numb + 1;
-            messgs_in_window -= numb_of_messages_to_be_minused;
-            first_seq_numb = last_ack;
-            EV << "Last ack " << last_ack << " first_seq " << first_seq_numb << " num tobe minused " << numb_of_messages_to_be_minused << endl;
-        }
-        else if (last_ack >= first_seq_numb)
-        {
-            EV << "IN HELLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL " << endl;
-            numb_of_messages_to_be_minused = last_ack - first_seq_numb + 1;
-            messgs_in_window -= numb_of_messages_to_be_minused;
-            first_seq_numb = last_ack;
-            EV << "Last ack " << last_ack << " first_seq " << first_seq_numb << " num tobe minused " << numb_of_messages_to_be_minused << endl;
-        }
-        else
-        {
-            EV << "IN HELLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL 2 " << endl;
-
-            numb_of_messages_to_be_minused = last_ack + 1 + ws - first_seq_numb;
-            messgs_in_window -= numb_of_messages_to_be_minused;
-            first_seq_numb = last_ack;
-            EV << "Last ack " << last_ack << " first_seq " << first_seq_numb << " num tobe minused " << numb_of_messages_to_be_minused << endl;
+            start++;
+            start %= WS;
+            messgs_in_window--;
         }
     }
 
@@ -182,7 +167,7 @@ void Node::handleMessage(cMessage *msg)
         if (acknowledge == true)
         {
             ack->setFrame_type('1'); // ack
-            ack->setAck_nack_numb((mmsg->getHeader() + 1) % ws);
+            ack->setAck_nack_numb((mmsg->getHeader() + 1) % WS);
         }
         else if (acknowledge == false)
         {
@@ -207,12 +192,12 @@ void Node::handleMessage(cMessage *msg)
         }
         else
         {
-            EV << "TIME " << simTime() << "SENT MESG " << mmsg->getPayload() << " Ack " << mmsg->getFrame_type() << endl;
+            EV << "TIME " << simTime() << "SENT MESG " << mmsg->getPayload() << " Ack " << mmsg->getFrame_type() << " ws " << messgs_in_window << endl;
             send(mmsg, "ino$o");
         }
     }
 
-    if (isSender == true && current_index < lines.size() && not_processing == true && messgs_in_window < ws)
+    if (isSender == true && current_index < lines.size() && not_processing == true && messgs_in_window < WS)
     {
 
         std::istringstream iss(lines[current_index]);
@@ -226,17 +211,30 @@ void Node::handleMessage(cMessage *msg)
         newMesg->setTrailer(checksum);
         newMesg->setFrame_type('2');
         newMesg->setName("processing_done");
-        newMesg->setHeader(current_seq_numb);
 
-        if (first_seq_numb == -1)
-            first_seq_numb = 0;
+        // if (first_seq_numb == -1)
+        // first_seq_numb = 0;
 
-        current_seq_numb++;
-        current_seq_numb %= ws;
+        // current_seq_numb++; // not yet
+        // current_seq_numb %= WS;
+
         messgs_in_window++;
 
-        EV
-            << "time to start processing " << simTime() << " WS " << messgs_in_window << " messg " << newMesg->getPayload() << endl;
+        if (start == -1) // lesa bensamy
+        {
+            start = 0;
+            end = 1;
+            window_messages.insert(window_messages.begin(), newMesg);
+        }
+        else // el 3ady
+        {
+
+            window_messages.insert(window_messages.begin() + end, newMesg);
+            end++;
+            end %= WS;
+        }
+        newMesg->setHeader(start);
+        EV << "time to start processing " << simTime() << " WS " << messgs_in_window << " messg " << newMesg->getPayload() << endl;
         current_index++;
         // EV << " sent message " << newMesg->getPayload() << endl;
         not_processing = false;
