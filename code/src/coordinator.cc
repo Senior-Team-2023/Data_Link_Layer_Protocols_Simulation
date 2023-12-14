@@ -25,7 +25,7 @@ void Coordinator::initialize()
 {
 
     // a2ra el file
-    std::ifstream inputFile("E:/fourth year/projects/networks/Data_Link_Layer_Protocols_Simulation/code/coordinator.txt");
+    std::ifstream inputFile("../coordinator.txt");
 
     // Check if the file is open
     if (!inputFile.is_open())

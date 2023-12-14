@@ -40,12 +40,12 @@ void Node::initialize()
     {
 
         EV << "IN FILE ONE ";
-        inputFile.open("E:/fourth year/projects/networks/Data_Link_Layer_Protocols_Simulation/code/input0.txt");
+        inputFile.open("../input0.txt");
     }
     else
     {
         EV << "IN FILE TWO ";
-        inputFile.open("E:/fourth year/projects/networks/Data_Link_Layer_Protocols_Simulation/code/input1.txt");
+        inputFile.open("../input1.txt");
     }
     // Check if the file is open
     if (!inputFile.is_open())
@@ -142,19 +142,34 @@ void Node::handleMessage(cMessage *msg)
 
     if (isSender == true && mmsg->getFrame_type() == '1' && !msg->isSelfMessage()) // ack message from reciever
     {
+
         int numb_of_messages_to_be_minused = 0;
         int last_ack = mmsg->getAck_nack_numb() - 1;
-        if (last_ack >= first_seq_numb)
+        if (last_ack == -1)
         {
+
+            EV << "IN HELLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL 0" << endl;
+            numb_of_messages_to_be_minused = first_seq_numb + 1;
+            messgs_in_window -= numb_of_messages_to_be_minused;
+            first_seq_numb = last_ack;
+            EV << "Last ack " << last_ack << " first_seq " << first_seq_numb << " num tobe minused " << numb_of_messages_to_be_minused << endl;
+        }
+        else if (last_ack >= first_seq_numb)
+        {
+            EV << "IN HELLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL " << endl;
             numb_of_messages_to_be_minused = last_ack - first_seq_numb + 1;
             messgs_in_window -= numb_of_messages_to_be_minused;
             first_seq_numb = last_ack;
+            EV << "Last ack " << last_ack << " first_seq " << first_seq_numb << " num tobe minused " << numb_of_messages_to_be_minused << endl;
         }
         else
         {
+            EV << "IN HELLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL 2 " << endl;
+
             numb_of_messages_to_be_minused = last_ack + 1 + ws - first_seq_numb;
             messgs_in_window -= numb_of_messages_to_be_minused;
             first_seq_numb = last_ack;
+            EV << "Last ack " << last_ack << " first_seq " << first_seq_numb << " num tobe minused " << numb_of_messages_to_be_minused << endl;
         }
     }
 
@@ -221,7 +236,7 @@ void Node::handleMessage(cMessage *msg)
         messgs_in_window++;
 
         EV
-            << "time to start processing " << simTime() << endl;
+            << "time to start processing " << simTime() << " WS " << messgs_in_window << " messg " << newMesg->getPayload() << endl;
         current_index++;
         // EV << " sent message " << newMesg->getPayload() << endl;
         not_processing = false;
