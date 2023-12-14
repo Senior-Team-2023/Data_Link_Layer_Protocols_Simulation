@@ -149,7 +149,6 @@ void Node::handleMessage(cMessage *msg)
     if (isSender == true && mmsg->getFrame_type() == '1' && !msg->isSelfMessage()) // ack message from reciever
     {
 
-        EV << "ACK RECIEVED " << mmsg->getAck_nack_numb() << endl;
         // if (mmsg->getAck_nack_numb() == -1)
         // {
         //     EV << "TIME " << simTime() << "RECIEVED ACK " << messgs_in_window << endl;
@@ -163,9 +162,12 @@ void Node::handleMessage(cMessage *msg)
         //     }
         // }
         // else
+        EV << "ACK RECIEVED " << mmsg->getAck_nack_numb() << endl;
+
         while ((start % WS) < mmsg->getAck_nack_numb())
 
         {
+            EV << "TIME " << simTime() << "RECIEVED ACK " << messgs_in_window << endl;
             start++;
             start %= WS;
             messgs_in_window--;
