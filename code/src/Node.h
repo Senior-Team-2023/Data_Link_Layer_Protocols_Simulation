@@ -25,6 +25,7 @@
 #include "myMessage_m.h"
 using namespace omnetpp;
 
+
 /**
  * TODO - Generated class
  */
@@ -37,6 +38,10 @@ protected:
   int messgs_in_window;
   int current_seq_numb;
 
+  std::vector<MyMessage_Base *> window_messages;
+
+  int start;
+  int end;
   bool isSender;
   bool not_processing;
 
