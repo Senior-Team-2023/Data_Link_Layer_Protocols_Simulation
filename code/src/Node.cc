@@ -162,17 +162,17 @@ void Node::handleMessage(cMessage *msg)
         //     }
         // }
         // else
-        EV << "ACK RECIEVED " << mmsg->getAck_nack_numb() << endl;
+        EV << "Before ACK RECIEVED " << mmsg->getAck_nack_numb() << "start " << start << endl;
 
-        while ((start % WS) < mmsg->getAck_nack_numb())
+        while (start != mmsg->getAck_nack_numb())
 
         {
-            EV << "TIME " << simTime() << "RECIEVED ACK " << messgs_in_window << endl;
+            EV << "In TIME " << simTime() << "RECIEVED ACK " << messgs_in_window << endl;
             start++;
             start %= WS;
             messgs_in_window--;
         }
-        EV << "RECIEVED ACK " << simTime() << " " << messgs_in_window << endl;
+        EV << "End RECIEVED ACK " << simTime() << " " << messgs_in_window << endl;
     }
 
     if (mmsg->getFrame_type() == '2' && !msg->isSelfMessage()) // the message is data recieved
@@ -188,6 +188,7 @@ void Node::handleMessage(cMessage *msg)
         }
         else if (acknowledge == false)
         {
+            EV << "IN      SHELLLLLLLLLLLLLLLLLLLL" << endl;
             ack->setFrame_type('0'); // nack
             ack->setAck_nack_numb(mmsg->getHeader());
         }
@@ -209,7 +210,7 @@ void Node::handleMessage(cMessage *msg)
         }
         else
         {
-            EV << "TIME " << simTime() << "SENT MESG " << mmsg->getPayload() << " Ack " << mmsg->getFrame_type() << " ws " << messgs_in_window << endl;
+            EV << "TIME " << simTime() << "SENT MESG " << mmsg->getPayload() << " Ack " << mmsg->getFrame_type() << " ws " << messgs_in_window << " ack " << mmsg->getAck_nack_numb() << endl;
             send(mmsg, "ino$o");
         }
     }
@@ -250,7 +251,8 @@ void Node::handleMessage(cMessage *msg)
             end++;
             end %= WS;
         }
-        newMesg->setHeader(start);
+
+        newMesg->setHeader(end - 1);
         EV << "time to start processing " << simTime() << " WS " << messgs_in_window << " messg " << newMesg->getPayload() << endl;
         current_index++;
         // EV << " sent message " << newMesg->getPayload() << endl;
