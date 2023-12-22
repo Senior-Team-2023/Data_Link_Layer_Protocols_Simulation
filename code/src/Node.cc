@@ -18,7 +18,7 @@
 #define ED 4.0
 #define DD 0.1
 #define PT 0.5
-#define LP 0
+#define LP 0.6
 #include "Node.h"
 
 Define_Module(Node);
@@ -130,11 +130,15 @@ std::string decode(std::string frame, char checksum, bool &acknowledge)
     return realPayload;
 }
 
+// FOR ACK NACK
+// if set header = -1 so it is loss
+// if set header =-2 so it is not loss
 void Node::handleMessage(cMessage *msg)
 {
     // TODO - Generated method body
     MyMessage_Base *mmsg = check_and_cast<MyMessage_Base *>(msg);
 
+    // at sneder start from coordinator
     if (mmsg->getFrame_type() == '3') // the message is for start sending from coordinator
     {
         isSender = true;
@@ -146,35 +150,47 @@ void Node::handleMessage(cMessage *msg)
         }
     }
 
+    //   at sendet nack found
+    if (isSender == true && mmsg->getFrame_type() == '0' && !msg->isSelfMessage()) // nack message from reciever
+    {
+
+        EV << "NACK!!!!! " << mmsg->getAck_nack_numb() << "start " << start << endl;
+        int fake_start = start;
+        int counter = 0;
+        while (fake_start != end)
+
+        {
+            counter++;
+
+            EV << "In TIME " << simTime() << "RECIEVED NACK " << messgs_in_window << endl;
+            fake_start++;
+            fake_start %= (WS + 1);
+            messgs_in_window--;
+        }
+        end = start;
+        current_index -= counter;
+        EV << "NACK!!!!! " << simTime() << "   " << mmsg->getAck_nack_numb() << "start " << start << endl;
+    }
+
+    // at sender ack found
     if (isSender == true && mmsg->getFrame_type() == '1' && !msg->isSelfMessage()) // ack message from reciever
     {
 
-        // if (mmsg->getAck_nack_numb() == -1)
-        // {
-        //     EV << "TIME " << simTime() << "RECIEVED ACK " << messgs_in_window << endl;
-        //     messgs_in_window--;
-        //     start++;
-        //     start %= WS;
-        //     if (start == end)
-        //     {
-        //         start = -1;
-        //         end = -1;
-        //     }
-        // }
-        // else
-        EV << "Before ACK RECIEVED " << mmsg->getAck_nack_numb() << "start " << start << endl;
+        EV << "Before ACK RECIEVED " << mmsg->getAck_nack_numb() << "start " << start << " " << end << endl;
 
+        // if(start == mmsg->getAck_nack_numb())
         while (start != mmsg->getAck_nack_numb())
 
         {
             EV << "In TIME " << simTime() << "RECIEVED ACK " << messgs_in_window << endl;
             start++;
-            start %= WS;
+            start %= (WS + 1);
             messgs_in_window--;
         }
         EV << "End RECIEVED ACK " << simTime() << " " << messgs_in_window << endl;
     }
 
+    // AT reciever data found and sending ack and nack
     if (mmsg->getFrame_type() == '2' && !msg->isSelfMessage()) // the message is data recieved
     {
 
@@ -184,7 +200,7 @@ void Node::handleMessage(cMessage *msg)
         if (acknowledge == true)
         {
             ack->setFrame_type('1'); // ack
-            ack->setAck_nack_numb((mmsg->getHeader() + 1) % WS);
+            ack->setAck_nack_numb((mmsg->getHeader() + 1) % (WS + 1));
         }
         else if (acknowledge == false)
         {
@@ -195,26 +211,90 @@ void Node::handleMessage(cMessage *msg)
         // send(ack, "ino$o");
 
         ack->setPayload(payload.c_str());
+        ack->setName("processing_done");
+        float er = uniform(0, 1);
+        EV << " ERROR " << er << " " << LP << endl;
+        if (er < LP)
+        {
+            EV << "HERE IS A LOSS " << er << " msg seq " << ack->getAck_nack_numb() << endl;
+            // so it's a loss
+            ack->setHeader(-1);
+        }
+        else
+        {
+            EV << "No LOSS " << er << " msg seq " << ack->getAck_nack_numb() << endl;
+            // not loss
+            ack->setHeader(-2);
+        }
         // EV << "RECIEVED MESG before scheduling the ack  " << payload << "   MSG ACK " << ack->getFrame_type() << endl;
-        scheduleAt(simTime() + PT + TD, ack);
+        scheduleAt(simTime() + PT, ack);
     }
 
+    // at both forwarding either wit td or not
     if (msg->isSelfMessage()) // just forwarding after a delay
     {
 
+        // processing done so we need to schedule it  and schedule the timeout
         if (strcmp(msg->getName(), "processing_done") == 0) // to separate last loop
         {
             not_processing = true;
             msg->setName("");
             scheduleAt(simTime() + TD, mmsg);
+            // an alarm to wake up after the TO delay
+            if (mmsg->getFrame_type() == '2')
+            {
+                MyMessage_Base *wake_up = new MyMessage_Base();
+                wake_up->setName("timeout");
+                wake_up->setHeader(mmsg->getHeader());
+                scheduleAt(simTime() + TO, wake_up);
+            }
         }
+        // it's after a timeout
+        else if (strcmp(msg->getName(), "timeout") == 0 && isSender == true)
+        {
+            EV << "TIMEOUT!!!!! " << mmsg->getAck_nack_numb() << "start " << start << endl;
+            int fake_start = start;
+            int counter = 0;
+            while (fake_start != end)
+
+            {
+                counter++;
+
+                EV << "In TIME " << simTime() << "TIME OUT " << messgs_in_window << endl;
+                fake_start++;
+                fake_start %= (WS + 1);
+                messgs_in_window--;
+            }
+            end = start;
+            current_index -= counter;
+            EV << "TIMEOUT!!!!! " << simTime() << "   " << mmsg->getAck_nack_numb() << "start " << start << endl;
+        }
+
         else
         {
             EV << "TIME " << simTime() << "SENT MESG " << mmsg->getPayload() << " Ack " << mmsg->getFrame_type() << " ws " << messgs_in_window << " ack " << mmsg->getAck_nack_numb() << endl;
-            send(mmsg, "ino$o");
+
+            // if ack or nack
+            if (mmsg->getFrame_type() == '1' || mmsg->getFrame_type() == '0')
+            {
+                // it's  not a loss
+                if (mmsg->getHeader() == -2)
+                {
+                    send(mmsg, "ino$o");
+                }
+                else
+                {
+                    EV << " LOSSS IN before send directly " << mmsg->getAck_nack_numb();
+                }
+            }
+            else
+            {
+                send(mmsg, "ino$o");
+            }
         }
     }
 
+    // at sender sending data
     if (isSender == true && current_index < lines.size() && not_processing == true && messgs_in_window < WS)
     {
 
@@ -249,7 +329,7 @@ void Node::handleMessage(cMessage *msg)
 
             window_messages.insert(window_messages.begin() + end, newMesg);
             end++;
-            end %= WS;
+            end %= (WS + 1);
         }
 
         newMesg->setHeader(end - 1);
