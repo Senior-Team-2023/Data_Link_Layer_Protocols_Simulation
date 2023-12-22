@@ -18,7 +18,7 @@
 #define ED 4.0
 #define DD 0.1
 #define PT 0.5
-#define LP 0.6
+#define LP 0.8
 #include "Node.h"
 
 Define_Module(Node);
@@ -27,8 +27,10 @@ void Node::initialize()
 {
     isSender = false;
     // Reading the file
+    no_error_messages = 0;
     start = -1;
     end = -1;
+    reciever_expected_seq_numb = 0;
     not_processing = true;
     current_index = -1;
     messgs_in_window = 0;
@@ -144,9 +146,10 @@ void Node::handleMessage(cMessage *msg)
         isSender = true;
 
         current_index = 0;
-        for (int i = 0; i < WS; i++)
+        for (int i = 0; i < WS + 1; i++)
         {
             window_messages.push_back(nullptr);
+            time_outs.push_back(-1);
         }
     }
 
@@ -154,8 +157,20 @@ void Node::handleMessage(cMessage *msg)
     if (isSender == true && mmsg->getFrame_type() == '0' && !msg->isSelfMessage()) // nack message from reciever
     {
 
+        while (start != mmsg->getAck_nack_numb())
+
+        {
+            EV << "In TIME " << simTime() << "RECIEVED NACK " << endl;
+            start++;
+            start %= (WS + 1);
+            // we are gonna consider all before nacks as acks
+            time_outs.insert(time_outs.begin() + start, -1);
+        }
+
         EV << "NACK!!!!! " << mmsg->getAck_nack_numb() << "start " << start << endl;
-        int fake_start = start;
+        // get the count of elemnts before the acks to move the index in file
+        int fake_start = mmsg->getAck_nack_numb();
+
         int counter = 0;
         while (fake_start != end)
 
@@ -165,11 +180,17 @@ void Node::handleMessage(cMessage *msg)
             EV << "In TIME " << simTime() << "RECIEVED NACK " << messgs_in_window << endl;
             fake_start++;
             fake_start %= (WS + 1);
-            messgs_in_window--;
         }
-        end = start;
         current_index -= counter;
+
+        start = mmsg->getAck_nack_numb();
+
+        end = start;
+
+        no_error_messages += 1;
         EV << "NACK!!!!! " << simTime() << "   " << mmsg->getAck_nack_numb() << "start " << start << endl;
+
+        messgs_in_window = 0;
     }
 
     // at sender ack found
@@ -186,7 +207,10 @@ void Node::handleMessage(cMessage *msg)
             start++;
             start %= (WS + 1);
             messgs_in_window--;
+            // we are gonna consider all before ack as acked (accumulative acks)
+            time_outs.insert(time_outs.begin() + start, -1);
         }
+
         EV << "End RECIEVED ACK " << simTime() << " " << messgs_in_window << endl;
     }
 
@@ -197,37 +221,72 @@ void Node::handleMessage(cMessage *msg)
         bool acknowledge;
         std::string payload = decode(mmsg->getPayload(), mmsg->getTrailer(), acknowledge);
         MyMessage_Base *ack = new MyMessage_Base();
-        if (acknowledge == true)
+        EV << ack->getAck_nack_numb() << " IN   ACKKKKKKKKKKKKK " << mmsg->getPayload() << "  " << simTime() << " expec " << reciever_expected_seq_numb << " header " << mmsg->getHeader() << endl;
+        if (acknowledge == true && reciever_expected_seq_numb == mmsg->getHeader())
         {
             ack->setFrame_type('1'); // ack
+            reciever_expected_seq_numb += 1;
+            reciever_expected_seq_numb %= (WS + 1);
             ack->setAck_nack_numb((mmsg->getHeader() + 1) % (WS + 1));
+            ack->setPayload(payload.c_str());
+            ack->setName("processing_done");
+            float er = uniform(0, 1);
+            EV << " ERROR " << er << " " << LP << endl;
+            if (er <= LP)
+            {
+                EV << "HERE IS A LOSS " << er << " msg seq " << ack->getAck_nack_numb() << endl;
+                // so it's a loss
+                ack->setHeader(-1);
+            }
+            else
+            {
+                EV << "No LOSS " << er << " msg seq " << ack->getAck_nack_numb() << endl;
+                // not loss
+                ack->setHeader(-2);
+            }
+            // EV << "RECIEVED MESG before scheduling the ack  " << payload << "   MSG ACK " << ack->getFrame_type() << endl;
+            scheduleAt(simTime() + PT, ack);
+            // cancelAndDelete(mmsg);
+            cancelAndDelete(msg);
         }
-        else if (acknowledge == false)
+        else if (acknowledge == false || reciever_expected_seq_numb == mmsg->getHeader())
         {
-            EV << "IN      SHELLLLLLLLLLLLLLLLLLLL" << endl;
             ack->setFrame_type('0'); // nack
-            ack->setAck_nack_numb(mmsg->getHeader());
+            ack->setAck_nack_numb(reciever_expected_seq_numb);
+            EV << ack->getAck_nack_numb() << " IN      HELLLLLLLLLLLLLLLLLLLL " << mmsg->getPayload() << "  " << simTime() << " expec " << reciever_expected_seq_numb << " header " << mmsg->getHeader() << endl;
+
+            ack->setPayload(payload.c_str());
+            ack->setName("processing_done");
+            float er = uniform(0, 1);
+            EV << " ERROR " << er << " " << LP << endl;
+            if (er <= LP)
+            {
+                EV << "HERE IS A LOSS " << er << " msg seq " << ack->getAck_nack_numb() << endl;
+                // so it's a loss
+                ack->setHeader(-1);
+            }
+            else
+            {
+                EV << "No LOSS " << er << " msg seq " << ack->getAck_nack_numb() << endl;
+                // not loss
+                ack->setHeader(-2);
+            }
+            // EV << "RECIEVED MESG before scheduling the ack  " << payload << "   MSG ACK " << ack->getFrame_type() << endl;
+            scheduleAt(simTime() + PT, ack);
+            // cancelAndDelete(mmsg);
+            cancelAndDelete(msg);
+        }
+        else if (reciever_expected_seq_numb != mmsg->getHeader())
+        {
+            ack->setFrame_type('1'); // ack
+
+            ack->setAck_nack_numb(reciever_expected_seq_numb);
+            ack->setPayload(payload.c_str());
+            ack->setName("processing_done");
+            ack->setHeader(-2);
+            scheduleAt(simTime() + PT, ack);
         }
         // send(ack, "ino$o");
-
-        ack->setPayload(payload.c_str());
-        ack->setName("processing_done");
-        float er = uniform(0, 1);
-        EV << " ERROR " << er << " " << LP << endl;
-        if (er < LP)
-        {
-            EV << "HERE IS A LOSS " << er << " msg seq " << ack->getAck_nack_numb() << endl;
-            // so it's a loss
-            ack->setHeader(-1);
-        }
-        else
-        {
-            EV << "No LOSS " << er << " msg seq " << ack->getAck_nack_numb() << endl;
-            // not loss
-            ack->setHeader(-2);
-        }
-        // EV << "RECIEVED MESG before scheduling the ack  " << payload << "   MSG ACK " << ack->getFrame_type() << endl;
-        scheduleAt(simTime() + PT, ack);
     }
 
     // at both forwarding either wit td or not
@@ -246,32 +305,47 @@ void Node::handleMessage(cMessage *msg)
                 MyMessage_Base *wake_up = new MyMessage_Base();
                 wake_up->setName("timeout");
                 wake_up->setHeader(mmsg->getHeader());
-                scheduleAt(simTime() + TO, wake_up);
+                simtime_t current_time = simTime();
+                scheduleAt(current_time + TO, wake_up);
+
+                time_outs.insert(time_outs.begin() + mmsg->getHeader(), current_time + TO);
             }
         }
         // it's after a timeout
         else if (strcmp(msg->getName(), "timeout") == 0 && isSender == true)
         {
-            EV << "TIMEOUT!!!!! " << mmsg->getAck_nack_numb() << "start " << start << endl;
-            int fake_start = start;
-            int counter = 0;
-            while (fake_start != end)
 
+            if (!(time_outs[mmsg->getHeader()] == -1 || time_outs[mmsg->getHeader()] > simTime()))
             {
-                counter++;
+                EV << "TIMEOUT!!!!! " << mmsg->getHeader() << "start " << start << endl;
+                int fake_start = mmsg->getHeader();
+                int counter = 0;
+                while (fake_start != end)
 
-                EV << "In TIME " << simTime() << "TIME OUT " << messgs_in_window << endl;
-                fake_start++;
-                fake_start %= (WS + 1);
-                messgs_in_window--;
+                {
+                    counter++;
+
+                    EV << "In TIME " << simTime() << "RECIEVED NACK " << messgs_in_window << endl;
+                    fake_start++;
+                    fake_start %= (WS + 1);
+                    messgs_in_window--;
+                    time_outs.insert(time_outs.begin() + fake_start, -1);
+                }
+                current_index -= counter;
+
+                // start = mmsg->getHeader();
+
+                // end = start;
+                end = mmsg->getHeader();
+
+                no_error_messages += 1;
+                EV << "TIMEOUT!!!!! " << simTime() << "   " << mmsg->getHeader() << "start " << start << endl;
             }
-            end = start;
-            current_index -= counter;
-            EV << "TIMEOUT!!!!! " << simTime() << "   " << mmsg->getAck_nack_numb() << "start " << start << endl;
         }
 
         else
         {
+            EV << "OHHHHHHHHHH" << endl;
             EV << "TIME " << simTime() << "SENT MESG " << mmsg->getPayload() << " Ack " << mmsg->getFrame_type() << " ws " << messgs_in_window << " ack " << mmsg->getAck_nack_numb() << endl;
 
             // if ack or nack
@@ -322,17 +396,19 @@ void Node::handleMessage(cMessage *msg)
         {
             start = 0;
             end = 1;
+            newMesg->setHeader(end - 1);
             window_messages.insert(window_messages.begin(), newMesg);
         }
         else // el 3ady
         {
 
             window_messages.insert(window_messages.begin() + end, newMesg);
+            newMesg->setHeader(end);
             end++;
+
             end %= (WS + 1);
         }
 
-        newMesg->setHeader(end - 1);
         EV << "time to start processing " << simTime() << " WS " << messgs_in_window << " messg " << newMesg->getPayload() << endl;
         current_index++;
         // EV << " sent message " << newMesg->getPayload() << endl;
