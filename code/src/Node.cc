@@ -292,7 +292,7 @@ void Node::handleMessage(cMessage *msg)
     // at both forwarding either wit td or not
     if (msg->isSelfMessage()) // just forwarding after a delay
     {
-
+        // !!!!!!!!!!!!!!!!!handle other processing done for errors!!!!!!!!!!!!!!!
         // processing done so we need to schedule it  and schedule the timeout
         if (strcmp(msg->getName(), "processing_done") == 0) // to separate last loop
         {
@@ -348,10 +348,10 @@ void Node::handleMessage(cMessage *msg)
             EV << "OHHHHHHHHHH" << endl;
             EV << "TIME " << simTime() << "SENT MESG " << mmsg->getPayload() << " Ack " << mmsg->getFrame_type() << " ws " << messgs_in_window << " ack " << mmsg->getAck_nack_numb() << endl;
 
-            // if ack or nack
+            // if ack or nack with LP
             if (mmsg->getFrame_type() == '1' || mmsg->getFrame_type() == '0')
             {
-                // it's  not a loss
+                // it's  not a loss in ackk or nack
                 if (mmsg->getHeader() == -2)
                 {
                     send(mmsg, "ino$o");
@@ -361,6 +361,7 @@ void Node::handleMessage(cMessage *msg)
                     EV << " LOSSS IN before send directly " << mmsg->getAck_nack_numb();
                 }
             }
+            // A nOrmal MEssage
             else
             {
                 send(mmsg, "ino$o");
@@ -382,13 +383,6 @@ void Node::handleMessage(cMessage *msg)
         newMesg->setPayload(realFrame.c_str());
         newMesg->setTrailer(checksum);
         newMesg->setFrame_type('2');
-        newMesg->setName("processing_done");
-
-        // if (first_seq_numb == -1)
-        // first_seq_numb = 0;
-
-        // current_seq_numb++; // not yet
-        // current_seq_numb %= WS;
 
         messgs_in_window++;
 
@@ -411,8 +405,82 @@ void Node::handleMessage(cMessage *msg)
 
         EV << "time to start processing " << simTime() << " WS " << messgs_in_window << " messg " << newMesg->getPayload() << endl;
         current_index++;
-        // EV << " sent message " << newMesg->getPayload() << endl;
         not_processing = false;
-        scheduleAt(simTime() + PT, newMesg);
+
+        // no errors
+
+        char mod = errors[0];
+        char loss = errors[1];
+        char dup = errors[2];
+        char delay = errors[3];
+
+        EV << "Mod " << mod << " Loss " << loss << " DUP " << dup << " Delay " << delay << endl;
+
+        //    no errors
+        if (mod == '0' && loss == '0' && dup == '0' && delay == '0')
+        {
+            newMesg->setName("processing_done");
+            scheduleAt(simTime() + PT, newMesg);
+        }
+
+        // if modification and no other errors so ensd it else just modify and continue
+        if (mod == '1' && loss == '0')
+        {
+
+            newMesg->setName("processing_done");
+            int count = realFrame.length();
+            int random_index = int(uniform(0, count));
+            int random_shift = int(uniform(0, 7));
+
+            // for (int i = 7; i >= 0; --i)
+            // {
+            //     EV << ((realFrame[random_index] >> i) & 1);
+            // }
+            // EV << "PRE SHIFT " << realFrame[random_index] << endl;
+            realFrame[random_index] ^= 1 << random_shift;
+            // EV << " REAL FRAME " << realFrame << " random index " << random_index << " random shift  " << random_shift << endl;
+            // for (int i = 7; i >= 0; --i)
+            // {
+            //     EV << ((realFrame[random_index] >> i) & 1);
+            // }
+
+            newMesg->setPayload(realFrame);
+            // no other errors so just send it
+            if (dup == '0' && delay == '0')
+            {
+                scheduleAt(simTime() + PT, newMesg);
+            }
+        }
+
+        // dup but no delay
+        if (dup == '1' &&delay = '0' && loss == '0')
+        {
+            newMesg->setName("processing_done_dup");
+
+            scheduleAt(simTime() + PT, newMesg);
+        }
+        // delay but no dup
+        if (delay == '1' &&dup = '0' && loss == '0')
+        {
+            newMesg->setName("processing_done_delay");
+            scheduleAt(simTime() + PT, newMesg);
+        }
+
+        // dup and delay
+        if (delay == '1' &&dup = '1' && loss == '0')
+        {
+            newMesg->setName("processing_done_dup_delay");
+            scheduleAt(simTime() + PT, newMesg);
+        }
+        if (loss == '1')
+        {
+            newMesg->setName("processing_done_loss");
+            scheduleAt(simTime() + PT, newMesg);
+        }
+        // if (first_seq_numb == -1)
+        // first_seq_numb = 0;
+
+        // current_seq_numb++; // not yet
+        // current_seq_numb %= WS;
     }
 }
