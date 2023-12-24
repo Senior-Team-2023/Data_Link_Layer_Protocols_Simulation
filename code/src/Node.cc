@@ -292,6 +292,8 @@ void Node::handleMessage(cMessage *msg)
     // at both forwarding either wit td or not
     if (msg->isSelfMessage()) // just forwarding after a delay
     {
+
+        EV << "msg name " << msg->getName() << " !!!!!!!!!!!!\n";
         // !!!!!!!!!!!!!!!!!handle other processing done for errors!!!!!!!!!!!!!!!
         // processing done so we need to schedule it  and schedule the timeout
         if (strcmp(msg->getName(), "processing_done") == 0) // to separate last loop
@@ -299,6 +301,8 @@ void Node::handleMessage(cMessage *msg)
             not_processing = true;
             msg->setName("");
             scheduleAt(simTime() + TD, mmsg);
+
+            EV << " IN FALLING THUNDRE " << endl;
             // an alarm to wake up after the TO delay
             if (mmsg->getFrame_type() == '2')
             {
@@ -311,6 +315,96 @@ void Node::handleMessage(cMessage *msg)
                 time_outs.insert(time_outs.begin() + mmsg->getHeader(), current_time + TO);
             }
         }
+        else if (strcmp(msg->getName(), "processing_done_delay") == 0) // to separate last loop
+        {
+            not_processing = true;
+            msg->setName("");
+            scheduleAt(simTime() + TD + ED, mmsg);
+            // an alarm to wake up after the TO delay
+            if (mmsg->getFrame_type() == '2')
+            {
+                MyMessage_Base *wake_up = new MyMessage_Base();
+                wake_up->setName("timeout");
+                wake_up->setHeader(mmsg->getHeader());
+                simtime_t current_time = simTime();
+                scheduleAt(current_time + TO, wake_up);
+
+                time_outs.insert(time_outs.begin() + mmsg->getHeader(), current_time + TO);
+            }
+        }
+        else if (strcmp(msg->getName(), "processing_done_dup") == 0) // to separate last loop
+        {
+            not_processing = true;
+            msg->setName("");
+            MyMessage_Base *dup_msg = new MyMessage_Base();
+            dup_msg->setPayload(mmsg->getPayload());
+            dup_msg->setTrailer(mmsg->getTrailer());
+            dup_msg->setFrame_type(mmsg->getFrame_type());
+            dup_msg->setHeader(mmsg->getHeader());
+            dup_msg->setName("");
+            scheduleAt(simTime() + TD, mmsg);
+            scheduleAt(simTime() + TD + DD, dup_msg);
+            // an alarm to wake up after the TO delay
+            if (mmsg->getFrame_type() == '2')
+            {
+                MyMessage_Base *wake_up = new MyMessage_Base();
+                wake_up->setName("timeout");
+                wake_up->setHeader(mmsg->getHeader());
+                simtime_t current_time = simTime();
+                scheduleAt(current_time + TO, wake_up);
+
+                time_outs.insert(time_outs.begin() + mmsg->getHeader(), current_time + TO);
+            }
+        }
+        else if (strcmp(msg->getName(), "processing_done_dup_delay") == 0) // to separate last loop
+        {
+            not_processing = true;
+            msg->setName("");
+            MyMessage_Base *dup_msg = new MyMessage_Base();
+            dup_msg->setPayload(mmsg->getPayload());
+            dup_msg->setTrailer(mmsg->getTrailer());
+            dup_msg->setFrame_type(mmsg->getFrame_type());
+            dup_msg->setHeader(mmsg->getHeader());
+            dup_msg->setName("");
+            scheduleAt(simTime() + TD + ED, mmsg);
+            scheduleAt(simTime() + TD + DD + ED, dup_msg);
+            // an alarm to wake up after the TO delay
+            if (mmsg->getFrame_type() == '2')
+            {
+                MyMessage_Base *wake_up = new MyMessage_Base();
+                wake_up->setName("timeout");
+                wake_up->setHeader(mmsg->getHeader());
+                simtime_t current_time = simTime();
+                scheduleAt(current_time + TO, wake_up);
+
+                time_outs.insert(time_outs.begin() + mmsg->getHeader(), current_time + TO);
+            }
+        }
+        else if (strcmp(msg->getName(), "processing_done_loss") == 0) // to separate last loop
+        {
+            not_processing = true;
+            // msg->setName("");
+            // MyMessage_Base *dup_msg = new MyMessage_Base();
+            // dup_msg->setPayload(mmsg->getPayload());
+            // dup_msg->setTrailer(mmsg->getTrailer());
+            // dup_msg->setFrame_type(mmsg->getFrame_type());
+            // dup_msg->setHeader(mmsg->getHeader());
+            // dup_msg->setName("");
+            // scheduleAt(simTime() + TD + ED, mmsg);
+            // scheduleAt(simTime() + TD + DD + ED, dup_msg);
+            // an alarm to wake up after the TO delay
+            if (mmsg->getFrame_type() == '2')
+            {
+                MyMessage_Base *wake_up = new MyMessage_Base();
+                wake_up->setName("timeout");
+                wake_up->setHeader(mmsg->getHeader());
+                simtime_t current_time = simTime();
+                scheduleAt(current_time + TO, wake_up);
+
+                time_outs.insert(time_outs.begin() + mmsg->getHeader(), current_time + TO);
+            }
+        }
+
         // it's after a timeout
         else if (strcmp(msg->getName(), "timeout") == 0 && isSender == true)
         {
@@ -444,30 +538,32 @@ void Node::handleMessage(cMessage *msg)
             //     EV << ((realFrame[random_index] >> i) & 1);
             // }
 
-            newMesg->setPayload(realFrame);
+            newMesg->setPayload(realFrame.c_str());
+            EV << " Before SHIT !!!!!!!!!!!" << endl;
             // no other errors so just send it
             if (dup == '0' && delay == '0')
             {
+                EV << " IN SHIT !!!!!!!!!!!" << endl;
                 scheduleAt(simTime() + PT, newMesg);
             }
         }
 
         // dup but no delay
-        if (dup == '1' &&delay = '0' && loss == '0')
+        if (dup == '1' && delay == '0' && loss == '0')
         {
             newMesg->setName("processing_done_dup");
 
             scheduleAt(simTime() + PT, newMesg);
         }
         // delay but no dup
-        if (delay == '1' &&dup = '0' && loss == '0')
+        if (delay == '1' && dup == '0' && loss == '0')
         {
             newMesg->setName("processing_done_delay");
             scheduleAt(simTime() + PT, newMesg);
         }
 
         // dup and delay
-        if (delay == '1' &&dup = '1' && loss == '0')
+        if (delay == '1' && dup == '1' && loss == '0')
         {
             newMesg->setName("processing_done_dup_delay");
             scheduleAt(simTime() + PT, newMesg);
