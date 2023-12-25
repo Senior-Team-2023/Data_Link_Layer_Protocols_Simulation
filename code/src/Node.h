@@ -42,7 +42,7 @@ protected:
   int start;
   int end;
   int reciever_expected_seq_numb;
-  int no_error_messages;
+  bool no_error_messages;
   bool isSender;
   bool not_processing;
 

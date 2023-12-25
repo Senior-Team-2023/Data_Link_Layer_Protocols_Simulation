@@ -5,7 +5,7 @@
 // (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY; without //EVen the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 //
@@ -18,7 +18,7 @@
 #define ED 4.0
 #define DD 0.1
 #define PT 0.5
-#define LP 0.8
+#define LP 0.0
 #include "Node.h"
 
 Define_Module(Node);
@@ -41,12 +41,12 @@ void Node::initialize()
     if (strcmp(this->getName(), "node0") == 0)
     {
 
-        EV << "IN FILE ONE ";
+        // EV << "IN FILE ONE ";
         inputFile.open("../input0.txt");
     }
     else
     {
-        EV << "IN FILE TWO ";
+        // EV << "IN FILE TWO ";
         inputFile.open("../input1.txt");
     }
     // Check if the file is open
@@ -59,7 +59,7 @@ void Node::initialize()
     std::string line;
     while (std::getline(inputFile, line))
     {
-        // EV << endl
+        // //EV << endl
         //    << "IN LOOP" << endl;
         lines.push_back(line);
     }
@@ -69,7 +69,7 @@ void Node::initialize()
 
         for (int i = 0; i < lines.size(); i++)
         {
-            EV << " file lines " << lines[i] << endl;
+            // EV << " file lines " << lines[i] << endl;
         }
     }
     // Close the file
@@ -95,7 +95,7 @@ std::string encode(std::string payload, char &checksum)
         checksum ^= ch;
     }
     checksum = ~checksum;
-    // EV << "REAL FRAME " << realFrame << endl;
+    // //EV << "REAL FRAME " << realFrame << endl;
     return realFrame;
 }
 
@@ -127,8 +127,8 @@ std::string decode(std::string frame, char checksum, bool &acknowledge)
         acknowledge = true;
     else
         acknowledge = false;
-    // EV << "CHECKSUM " << binaryRepresentation << endl;
-    // EV << "REAL PAYLOAD " << realPayload << endl;
+    // //EV << "CHECKSUM " << binaryRepresentation << endl;
+    // //EV << "REAL PAYLOAD " << realPayload << endl;
     return realPayload;
 }
 
@@ -154,21 +154,21 @@ void Node::handleMessage(cMessage *msg)
     }
 
     //   at sendet nack found
-    if (isSender == true && mmsg->getFrame_type() == '0' && !msg->isSelfMessage()) // nack message from reciever
+    if (isSender == true && mmsg->getFrame_type() == '0' && !msg->isSelfMessage()) // nack message from reci//EVer
     {
 
         while (start != mmsg->getAck_nack_numb())
 
         {
-            EV << "In TIME " << simTime() << "RECIEVED NACK " << endl;
+            // EV << "In TIME " << simTime() << "RECI//EVED NACK " << endl;
             start++;
             start %= (WS + 1);
             // we are gonna consider all before nacks as acks
             time_outs.insert(time_outs.begin() + start, -1);
         }
 
-        EV << "NACK!!!!! " << mmsg->getAck_nack_numb() << "start " << start << endl;
-        // get the count of elemnts before the acks to move the index in file
+        // EV << "NACK!!!!! " << mmsg->getAck_nack_numb() << "start " << start << endl;
+        //  get the count of elemnts before the acks to move the index in file
         int fake_start = mmsg->getAck_nack_numb();
 
         int counter = 0;
@@ -177,7 +177,7 @@ void Node::handleMessage(cMessage *msg)
         {
             counter++;
 
-            EV << "In TIME " << simTime() << "RECIEVED NACK " << messgs_in_window << endl;
+            // EV << "In TIME " << simTime() << "RECI//EVED NACK " << messgs_in_window << endl;
             fake_start++;
             fake_start %= (WS + 1);
         }
@@ -187,23 +187,23 @@ void Node::handleMessage(cMessage *msg)
 
         end = start;
 
-        no_error_messages += 1;
-        EV << "NACK!!!!! " << simTime() << "   " << mmsg->getAck_nack_numb() << "start " << start << endl;
+        no_error_messages = true;
+        // EV << "NACK!!!!! " << simTime() << "   " << mmsg->getAck_nack_numb() << "start " << start << endl;
 
         messgs_in_window = 0;
     }
 
     // at sender ack found
-    if (isSender == true && mmsg->getFrame_type() == '1' && !msg->isSelfMessage()) // ack message from reciever
+    if (isSender == true && mmsg->getFrame_type() == '1' && !msg->isSelfMessage()) // ack message from reci//EVer
     {
 
-        EV << "Before ACK RECIEVED " << mmsg->getAck_nack_numb() << "start " << start << " " << end << endl;
+        // EV << "Before ACK RECI//EVED " << mmsg->getAck_nack_numb() << "start " << start << " " << end << endl;
 
         // if(start == mmsg->getAck_nack_numb())
         while (start != mmsg->getAck_nack_numb())
 
         {
-            EV << "In TIME " << simTime() << "RECIEVED ACK " << messgs_in_window << endl;
+            // EV << "In TIME " << simTime() << "RECI//EVED ACK " << messgs_in_window << endl;
             start++;
             start %= (WS + 1);
             messgs_in_window--;
@@ -211,19 +211,22 @@ void Node::handleMessage(cMessage *msg)
             time_outs.insert(time_outs.begin() + start, -1);
         }
 
-        EV << "End RECIEVED ACK " << simTime() << " " << messgs_in_window << endl;
+        // EV << "End RECI//EVED ACK " << simTime() << " " << messgs_in_window << endl;
     }
 
-    // AT reciever data found and sending ack and nack
-    if (mmsg->getFrame_type() == '2' && !msg->isSelfMessage()) // the message is data recieved
+    // AT reci//EVer data found and sending ack and nack
+    if (mmsg->getFrame_type() == '2' && !msg->isSelfMessage()) // the message is data reci//EVed
     {
 
         bool acknowledge;
         std::string payload = decode(mmsg->getPayload(), mmsg->getTrailer(), acknowledge);
         MyMessage_Base *ack = new MyMessage_Base();
-        EV << ack->getAck_nack_numb() << " IN   ACKKKKKKKKKKKKK " << mmsg->getPayload() << "  " << simTime() << " expec " << reciever_expected_seq_numb << " header " << mmsg->getHeader() << endl;
+        // EV << ack->getAck_nack_numb() << " IN   ACKKKKKKKKKKKKK " << mmsg->getPayload() << "  " << simTime() << " expec " << reci//EVer_expected_seq_numb << " header " << mmsg->getHeader() << endl;
         if (acknowledge == true && reciever_expected_seq_numb == mmsg->getHeader())
         {
+
+            // Uploading payload = […..] and seq_num = […] to the network layer
+            EV << "Uploading payload = " << payload << " seq_num = " << mmsg->getHeader() << " to network layer " << endl;
             ack->setFrame_type('1'); // ack
             reciever_expected_seq_numb += 1;
             reciever_expected_seq_numb %= (WS + 1);
@@ -231,20 +234,20 @@ void Node::handleMessage(cMessage *msg)
             ack->setPayload(payload.c_str());
             ack->setName("processing_done");
             float er = uniform(0, 1);
-            EV << " ERROR " << er << " " << LP << endl;
+            // EV << " ERROR " << er << " " << LP << endl;
             if (er <= LP)
             {
-                EV << "HERE IS A LOSS " << er << " msg seq " << ack->getAck_nack_numb() << endl;
-                // so it's a loss
+                // EV << "HERE IS A LOSS " << er << " msg seq " << ack->getAck_nack_numb() << endl;
+                //  so it's a loss
                 ack->setHeader(-1);
             }
             else
             {
-                EV << "No LOSS " << er << " msg seq " << ack->getAck_nack_numb() << endl;
-                // not loss
+                // EV << "No LOSS " << er << " msg seq " << ack->getAck_nack_numb() << endl;
+                //  not loss
                 ack->setHeader(-2);
             }
-            // EV << "RECIEVED MESG before scheduling the ack  " << payload << "   MSG ACK " << ack->getFrame_type() << endl;
+            // //EV << "RECI//EVED MESG before scheduling the ack  " << payload << "   MSG ACK " << ack->getFrame_type() << endl;
             scheduleAt(simTime() + PT, ack);
             // cancelAndDelete(mmsg);
             cancelAndDelete(msg);
@@ -253,25 +256,25 @@ void Node::handleMessage(cMessage *msg)
         {
             ack->setFrame_type('0'); // nack
             ack->setAck_nack_numb(reciever_expected_seq_numb);
-            EV << ack->getAck_nack_numb() << " IN      HELLLLLLLLLLLLLLLLLLLL " << mmsg->getPayload() << "  " << simTime() << " expec " << reciever_expected_seq_numb << " header " << mmsg->getHeader() << endl;
+            // EV << ack->getAck_nack_numb() << " IN      HELLLLLLLLLLLLLLLLLLLL " << mmsg->getPayload() << "  " << simTime() << " expec " << reci//EVer_expected_seq_numb << " header " << mmsg->getHeader() << endl;
 
             ack->setPayload(payload.c_str());
             ack->setName("processing_done");
             float er = uniform(0, 1);
-            EV << " ERROR " << er << " " << LP << endl;
+            // EV << " ERROR " << er << " " << LP << endl;
             if (er <= LP)
             {
-                EV << "HERE IS A LOSS " << er << " msg seq " << ack->getAck_nack_numb() << endl;
-                // so it's a loss
+                // EV << "HERE IS A LOSS " << er << " msg seq " << ack->getAck_nack_numb() << endl;
+                //  so it's a loss
                 ack->setHeader(-1);
             }
             else
             {
-                EV << "No LOSS " << er << " msg seq " << ack->getAck_nack_numb() << endl;
-                // not loss
+                // EV << "No LOSS " << er << " msg seq " << ack->getAck_nack_numb() << endl;
+                //  not loss
                 ack->setHeader(-2);
             }
-            // EV << "RECIEVED MESG before scheduling the ack  " << payload << "   MSG ACK " << ack->getFrame_type() << endl;
+            // //EV << "RECI//EVED MESG before scheduling the ack  " << payload << "   MSG ACK " << ack->getFrame_type() << endl;
             scheduleAt(simTime() + PT, ack);
             // cancelAndDelete(mmsg);
             cancelAndDelete(msg);
@@ -293,19 +296,46 @@ void Node::handleMessage(cMessage *msg)
     if (msg->isSelfMessage()) // just forwarding after a delay
     {
 
-        EV << "msg name " << msg->getName() << " !!!!!!!!!!!!\n";
-        // !!!!!!!!!!!!!!!!!handle other processing done for errors!!!!!!!!!!!!!!!
-        // processing done so we need to schedule it  and schedule the timeout
+        /*At time [.. starting sending time after processing….. ], Node[id] [sent] frame with
+        seq_num=[..] and payload=[ ….. in characters after modification….. ] and trailer=[ …….in
+        bits….. ] , Modified [-1 for no modification, otherwise the modified bit number] , Lost
+        [Yes/No], Duplicate [0 for none, 1 for the first version, 2 for the second version], Delay [0
+        for no delay , otherwise the error delay interval]*/
+        std::bitset<8> binaryRepresentation(mmsg->getTrailer());
+
+        // EV << "msg name " << msg->getName() << " !!!!!!!!!!!!\n";
+        //  !!!!!!!!!!!!!!!!!handle other processing done for errors!!!!!!!!!!!!!!!
+        //  processing done so we need to schedule it  and schedule the timeout
         if (strcmp(msg->getName(), "processing_done") == 0) // to separate last loop
         {
+
+            if (mmsg->getFrame_type() == '1' || mmsg->getFrame_type() == '0')
+            {
+                // At time[.. starting sending time after processing….. ], Node[id] Sending [ACK/NACK] with
+                // number[…], loss[Yes / No]
+                std::string ctrl = (mmsg->getFrame_type() == '1') ? "ACK with number " : "NACK with number ";
+                std::string is_lost = (mmsg->getHeader() == '-1') ? " ,loss Yes" : " ,loss NO";
+                EV << "At time " << simTime() << " Node " << this->getIndex() << " Sending " << ctrl << mmsg->getAck_nack_numb() << is_lost << endl;
+            }
+
             not_processing = true;
             msg->setName("");
             scheduleAt(simTime() + TD, mmsg);
 
-            EV << " IN FALLING THUNDRE " << endl;
-            // an alarm to wake up after the TO delay
+            // EV << " IN FALLING THUNDRE " << endl;
+            //  an alarm to wake up after the TO delay
             if (mmsg->getFrame_type() == '2')
             {
+
+                EV << "AT Time " << simTime() << " , Node " << this->getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
+                   << " , Modified "
+                   << mmsg->getKind()
+                   << " , Lost "
+                   << "No "
+                   << " , Duplicate "
+                   << 0
+                   << " , Delay "
+                   << 0 << endl;
                 MyMessage_Base *wake_up = new MyMessage_Base();
                 wake_up->setName("timeout");
                 wake_up->setHeader(mmsg->getHeader());
@@ -317,6 +347,16 @@ void Node::handleMessage(cMessage *msg)
         }
         else if (strcmp(msg->getName(), "processing_done_delay") == 0) // to separate last loop
         {
+
+            EV << "AT Time " << simTime() << " , Node " << this->getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
+               << " , Modified "
+               << mmsg->getKind()
+               << " , Lost "
+               << "No "
+               << " , Duplicate "
+               << 0
+               << " , Delay "
+               << ED << endl;
             not_processing = true;
             msg->setName("");
             scheduleAt(simTime() + TD + ED, mmsg);
@@ -334,6 +374,26 @@ void Node::handleMessage(cMessage *msg)
         }
         else if (strcmp(msg->getName(), "processing_done_dup") == 0) // to separate last loop
         {
+
+            EV << "AT Time " << simTime() << " , Node " << this->getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
+               << " , Modified "
+               << mmsg->getKind()
+               << " , Lost "
+               << "No "
+               << " , Duplicate "
+               << 1
+               << " , Delay "
+               << 0 << endl;
+
+            EV << "AT Time " << simTime() << " , Node " << this->getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
+               << " , Modified "
+               << mmsg->getKind()
+               << " , Lost "
+               << "No "
+               << " , Duplicate "
+               << 2
+               << " , Delay "
+               << DD << endl;
             not_processing = true;
             msg->setName("");
             MyMessage_Base *dup_msg = new MyMessage_Base();
@@ -358,6 +418,26 @@ void Node::handleMessage(cMessage *msg)
         }
         else if (strcmp(msg->getName(), "processing_done_dup_delay") == 0) // to separate last loop
         {
+
+            EV << "AT Time " << simTime() << " , Node " << this->getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
+               << " , Modified "
+               << mmsg->getKind()
+               << " , Lost "
+               << "No "
+               << " , Duplicate "
+               << 1
+               << " , Delay "
+               << ED << endl;
+
+            EV << "AT Time " << simTime() << " , Node " << this->getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
+               << " , Modified "
+               << mmsg->getKind()
+               << " , Lost "
+               << "No "
+               << " , Duplicate "
+               << 2
+               << " , Delay "
+               << DD + ED << endl;
             not_processing = true;
             msg->setName("");
             MyMessage_Base *dup_msg = new MyMessage_Base();
@@ -382,6 +462,15 @@ void Node::handleMessage(cMessage *msg)
         }
         else if (strcmp(msg->getName(), "processing_done_loss") == 0) // to separate last loop
         {
+            EV << "AT Time " << simTime() << " , Node " << this->getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
+               << " , Modified "
+               << mmsg->getKind()
+               << " , Lost "
+               << "Yes "
+               << " , Duplicate "
+               << 0
+               << " , Delay "
+               << 0 << endl;
             not_processing = true;
             // msg->setName("");
             // MyMessage_Base *dup_msg = new MyMessage_Base();
@@ -408,10 +497,13 @@ void Node::handleMessage(cMessage *msg)
         // it's after a timeout
         else if (strcmp(msg->getName(), "timeout") == 0 && isSender == true)
         {
+            // Time out event at time [.. timer off-time….. ], at Node[id] for frame with seq_num=[..]
+
+            EV << "Time out event at time " << simTime() << " Node " << this->getIndex() << " for frame with seq_num" << mmsg->getHeader() << endl;
 
             if (!(time_outs[mmsg->getHeader()] == -1 || time_outs[mmsg->getHeader()] > simTime()))
             {
-                EV << "TIMEOUT!!!!! " << mmsg->getHeader() << "start " << start << endl;
+                // EV << "TIMEOUT!!!!! " << mmsg->getHeader() << "start " << start << endl;
                 int fake_start = mmsg->getHeader();
                 int counter = 0;
                 while (fake_start != end)
@@ -419,7 +511,7 @@ void Node::handleMessage(cMessage *msg)
                 {
                     counter++;
 
-                    EV << "In TIME " << simTime() << "RECIEVED NACK " << messgs_in_window << endl;
+                    // EV << "In TIME " << simTime() << "RECI//EVED NACK " << messgs_in_window << endl;
                     fake_start++;
                     fake_start %= (WS + 1);
                     messgs_in_window--;
@@ -432,19 +524,20 @@ void Node::handleMessage(cMessage *msg)
                 // end = start;
                 end = mmsg->getHeader();
 
-                no_error_messages += 1;
-                EV << "TIMEOUT!!!!! " << simTime() << "   " << mmsg->getHeader() << "start " << start << endl;
+                no_error_messages = true;
+                // EV << "TIMEOUT!!!!! " << simTime() << "   " << mmsg->getHeader() << "start " << start << endl;
             }
         }
-
+        // if the message is after the transmission mimic
         else
         {
-            EV << "OHHHHHHHHHH" << endl;
-            EV << "TIME " << simTime() << "SENT MESG " << mmsg->getPayload() << " Ack " << mmsg->getFrame_type() << " ws " << messgs_in_window << " ack " << mmsg->getAck_nack_numb() << endl;
+            // EV << "OHHHHHHHHHH" << endl;
+            // EV << "TIME " << simTime() << "SENT MESG " << mmsg->getPayload() << " Ack " << mmsg->getFrame_type() << " ws " << messgs_in_window << " ack " << mmsg->getAck_nack_numb() << endl;
 
             // if ack or nack with LP
             if (mmsg->getFrame_type() == '1' || mmsg->getFrame_type() == '0')
             {
+
                 // it's  not a loss in ackk or nack
                 if (mmsg->getHeader() == -2)
                 {
@@ -452,7 +545,7 @@ void Node::handleMessage(cMessage *msg)
                 }
                 else
                 {
-                    EV << " LOSSS IN before send directly " << mmsg->getAck_nack_numb();
+                    // EV << " LOSSS IN before send directly " << mmsg->getAck_nack_numb();
                 }
             }
             // A nOrmal MEssage
@@ -478,7 +571,13 @@ void Node::handleMessage(cMessage *msg)
         newMesg->setTrailer(checksum);
         newMesg->setFrame_type('2');
 
+        newMesg->setKind(-1);
         messgs_in_window++;
+
+        // At time [.. starting processing time….. ], Node[id] , Introducing channel error with code
+        // =[ …code in 4 bits… ]
+
+        EV << " At time " << simTime() << " Node[" << this->getIndex() << "]  Introducing channel error with code = " << errors << endl;
 
         if (start == -1) // lesa bensamy
         {
@@ -497,7 +596,7 @@ void Node::handleMessage(cMessage *msg)
             end %= (WS + 1);
         }
 
-        EV << "time to start processing " << simTime() << " WS " << messgs_in_window << " messg " << newMesg->getPayload() << endl;
+        // EV << "time to start processing " << simTime() << " WS " << messgs_in_window << " messg " << newMesg->getPayload() << endl;
         current_index++;
         not_processing = false;
 
@@ -508,71 +607,81 @@ void Node::handleMessage(cMessage *msg)
         char dup = errors[2];
         char delay = errors[3];
 
-        EV << "Mod " << mod << " Loss " << loss << " DUP " << dup << " Delay " << delay << endl;
+        // EV << "Mod " << mod << " Loss " << loss << " DUP " << dup << " Delay " << delay << endl;
 
         //    no errors
-        if (mod == '0' && loss == '0' && dup == '0' && delay == '0')
+        if ((mod == '0' && loss == '0' && dup == '0' && delay == '0') || no_error_messages)
         {
+
             newMesg->setName("processing_done");
             scheduleAt(simTime() + PT, newMesg);
         }
-
-        // if modification and no other errors so ensd it else just modify and continue
-        if (mod == '1' && loss == '0')
+        if (no_error_messages == false)
         {
-
-            newMesg->setName("processing_done");
-            int count = realFrame.length();
-            int random_index = int(uniform(0, count));
-            int random_shift = int(uniform(0, 7));
-
-            // for (int i = 7; i >= 0; --i)
-            // {
-            //     EV << ((realFrame[random_index] >> i) & 1);
-            // }
-            // EV << "PRE SHIFT " << realFrame[random_index] << endl;
-            realFrame[random_index] ^= 1 << random_shift;
-            // EV << " REAL FRAME " << realFrame << " random index " << random_index << " random shift  " << random_shift << endl;
-            // for (int i = 7; i >= 0; --i)
-            // {
-            //     EV << ((realFrame[random_index] >> i) & 1);
-            // }
-
-            newMesg->setPayload(realFrame.c_str());
-            EV << " Before SHIT !!!!!!!!!!!" << endl;
-            // no other errors so just send it
-            if (dup == '0' && delay == '0')
+            // if modification and no other errors so ensd it else just modify and continue
+            if (mod == '1' && loss == '0')
             {
-                EV << " IN SHIT !!!!!!!!!!!" << endl;
+
+                newMesg->setName("processing_done");
+                int count = realFrame.length();
+                int random_index = int(uniform(0, count - 1));
+                int random_shift = int(uniform(0, 7));
+
+                // 1000 1111
+                // 0000 0100 peter
+                // 7-randomshirt
+                // for (int i = 7; i >= 0; --i)
+                // {00001111
+                //     //EV << ((realFrame[random_index] >> i) & 1);
+                // }
+                // //EV << "PRE SHIFT " << realFrame[random_index] << endl;
+                realFrame[random_index] ^= 1 << random_shift;
+                // //EV << " REAL FRAME " << realFrame << " random index " << random_index << " random shift  " << random_shift << endl;
+                // for (int i = 7; i >= 0; --i)
+                // {
+                //     //EV << ((realFrame[random_index] >> i) & 1);
+                // }
+
+                newMesg->setKind(random_index * 8 + 7 - random_shift);
+
+                newMesg->setPayload(realFrame.c_str());
+                // EV << " Before SHIT !!!!!!!!!!!" << endl;
+                //  no other errors so just send it
+                if (dup == '0' && delay == '0')
+                {
+                    // EV << " IN SHIT !!!!!!!!!!!" << endl;
+                    scheduleAt(simTime() + PT, newMesg);
+                }
+            }
+
+            // dup but no delay
+            if (dup == '1' && delay == '0' && loss == '0')
+            {
+                newMesg->setName("processing_done_dup");
+
+                scheduleAt(simTime() + PT, newMesg);
+            }
+            // delay but no dup
+            if (delay == '1' && dup == '0' && loss == '0')
+            {
+                newMesg->setName("processing_done_delay");
+                scheduleAt(simTime() + PT, newMesg);
+            }
+
+            // dup and delay
+            if (delay == '1' && dup == '1' && loss == '0')
+            {
+                newMesg->setName("processing_done_dup_delay");
+                scheduleAt(simTime() + PT, newMesg);
+            }
+            if (loss == '1')
+            {
+                newMesg->setName("processing_done_loss");
                 scheduleAt(simTime() + PT, newMesg);
             }
         }
 
-        // dup but no delay
-        if (dup == '1' && delay == '0' && loss == '0')
-        {
-            newMesg->setName("processing_done_dup");
-
-            scheduleAt(simTime() + PT, newMesg);
-        }
-        // delay but no dup
-        if (delay == '1' && dup == '0' && loss == '0')
-        {
-            newMesg->setName("processing_done_delay");
-            scheduleAt(simTime() + PT, newMesg);
-        }
-
-        // dup and delay
-        if (delay == '1' && dup == '1' && loss == '0')
-        {
-            newMesg->setName("processing_done_dup_delay");
-            scheduleAt(simTime() + PT, newMesg);
-        }
-        if (loss == '1')
-        {
-            newMesg->setName("processing_done_loss");
-            scheduleAt(simTime() + PT, newMesg);
-        }
+        no_error_messages = false;
         // if (first_seq_numb == -1)
         // first_seq_numb = 0;
 
