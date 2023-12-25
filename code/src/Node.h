@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <iostream>
 #include <bitset>
 #include <climits>
 #include "myMessage_m.h"
