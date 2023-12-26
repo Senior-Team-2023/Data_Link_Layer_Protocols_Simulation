@@ -1,0 +1,52 @@
+ At time 55 Node[0]  Introducing channel error with code = 1000
+AT Time 55.5 , Node 0 frame with seq_num = 0 and payload $zerth $ and trailer 11000001 , Modified 0 , Lost No  , Duplicate 0 , Delay 0
+ At time 55.5 Node[0]  Introducing channel error with code = 0000
+AT Time 56 , Node 0 frame with seq_num = 1 and payload $first$ and trailer 10000101 , Modified 0 , Lost No  , Duplicate 0 , Delay 0
+ At time 56 Node[0]  Introducing channel error with code = 0000
+AT Time 56.5 , Node 0 frame with seq_num = 2 and payload $second$ and trailer 11101111 , Modified 0 , Lost No  , Duplicate 0 , Delay 0
+At time 57 Node 0 Sending NACK with number 0 ,loss NO
+At time 57.5 Node 0 Sending ACK with number 0 ,loss NO
+At time 58 Node 0 Sending ACK with number 0 ,loss NO
+ At time 58 Node[0]  Introducing channel error with code = 1000
+AT Time 58.5 , Node 0 frame with seq_num = 0 and payload $zeroth $ and trailer 11000001 , Modified 0 , Lost No  , Duplicate 0 , Delay 0
+ At time 58.5 Node[0]  Introducing channel error with code = 0000
+AT Time 59 , Node 0 frame with seq_num = 1 and payload $first$ and trailer 10000101 , Modified 0 , Lost No  , Duplicate 0 , Delay 0
+ At time 59 Node[0]  Introducing channel error with code = 0000
+AT Time 59.5 , Node 0 frame with seq_num = 2 and payload $second$ and trailer 11101111 , Modified 0 , Lost No  , Duplicate 0 , Delay 0
+Uploading payload = zeroth  seq_num = 0 to network layer 
+At time 60 Node 0 Sending ACK with number 1 ,loss NO
+Uploading payload = first seq_num = 1 to network layer 
+At time 60.5 Node 0 Sending ACK with number 2 ,loss NO
+Uploading payload = second seq_num = 2 to network layer 
+At time 61 Node 0 Sending ACK with number 3 ,loss NO
+ At time 61 Node[0]  Introducing channel error with code = 0000
+AT Time 61.5 , Node 0 frame with seq_num = 3 and payload $third$ and trailer 10011100 , Modified 0 , Lost No  , Duplicate 0 , Delay 0
+ At time 61.5 Node[0]  Introducing channel error with code = 0000
+AT Time 62 , Node 0 frame with seq_num = 0 and payload $fourth$ and trailer 11101101 , Modified 0 , Lost No  , Duplicate 0 , Delay 0
+ At time 62 Node[0]  Introducing channel error with code = 0000
+AT Time 62.5 , Node 0 frame with seq_num = 1 and payload $fifth$ and trailer 10001010 , Modified 0 , Lost No  , Duplicate 0 , Delay 0
+Uploading payload = third seq_num = 3 to network layer 
+At time 63 Node 0 Sending ACK with number 0 ,loss NO
+Uploading payload = fourth seq_num = 0 to network layer 
+At time 63.5 Node 0 Sending ACK with number 1 ,loss NO
+Uploading payload = fifth seq_num = 1 to network layer 
+At time 64 Node 0 Sending ACK with number 2 ,loss NO
+ At time 64 Node[0]  Introducing channel error with code = 0000
+AT Time 64.5 , Node 0 frame with seq_num = 2 and payload $sixth$ and trailer 10000001 , Modified 0 , Lost No  , Duplicate 0 , Delay 0
+ At time 64.5 Node[0]  Introducing channel error with code = 0000
+AT Time 65 , Node 0 frame with seq_num = 3 and payload $seventh$ and trailer 10001000 , Modified 0 , Lost No  , Duplicate 0 , Delay 0
+Time out event at time 65.5 Node 0 for frame with seq_num0
+Uploading payload = sixth seq_num = 2 to network layer 
+Time out event at time 66 Node 0 for frame with seq_num1
+At time 66 Node 0 Sending ACK with number 3 ,loss NO
+Uploading payload = seventh seq_num = 3 to network layer 
+Time out event at time 66.5 Node 0 for frame with seq_num2
+At time 66.5 Node 0 Sending ACK with number 0 ,loss NO
+Time out event at time 68.5 Node 0 for frame with seq_num0
+Time out event at time 69 Node 0 for frame with seq_num1
+Time out event at time 69.5 Node 0 for frame with seq_num2
+Time out event at time 71.5 Node 0 for frame with seq_num3
+Time out event at time 72 Node 0 for frame with seq_num0
+Time out event at time 72.5 Node 0 for frame with seq_num1
+Time out event at time 74.5 Node 0 for frame with seq_num2
+Time out event at time 75 Node 0 for frame with seq_num3
