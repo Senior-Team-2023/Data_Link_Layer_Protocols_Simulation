@@ -22,7 +22,9 @@
 #include <fstream>
 #include <bitset>
 #include <climits>
+#include <iostream>
 #include "myMessage_m.h"
+using namespace std;
 using namespace omnetpp;
 
 /**

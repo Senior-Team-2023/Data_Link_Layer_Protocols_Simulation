@@ -80,12 +80,24 @@ std::string encode(std::string payload, char &checksum)
     }
     realFrame += "$";
 
-    checksum = 0;
-    for (char ch : realFrame)
-    {
-        checksum ^= ch;
+    // checksum = 0;
+    // for (char ch : realFrame)
+    // {
+    //     checksum ^= ch;
+    // }
+    // checksum = ~checksum;
+    std::bitset<9> temp_checksum(0);
+    for (const auto& c : realFrame) {
+    // cout<<"current char: "<<std::bitset<8>(c)<<endl;
+        temp_checksum =temp_checksum.to_ullong()+ std::bitset<8>(c).to_ullong();
     }
-    checksum = ~checksum;
+    std::bitset<8> res(0);
+    for (int i = 0; i < res.size(); i++) {
+    res[i] = temp_checksum[i];
+} 
+    res = temp_checksum[temp_checksum.size() - 1] + res.to_ullong();
+    res =  res.flip();
+    checksum = static_cast<char>(res.to_ulong());
     return realFrame;
 }
 
