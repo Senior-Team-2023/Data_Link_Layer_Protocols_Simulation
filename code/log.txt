@@ -7,8 +7,8 @@ AT Time 1 , Node 0 frame with seq_num = 1 and payload $known as a bloom or bloss
 AT Time 1.5 , Node 0 frame with seq_num = 2 and payload $is the reproductive/$ structure found  also called// angiosperms/$).$ and trailer 01000010 , Modified -1 , Lost Yes  , Duplicate 0 , Delay 0
  At time 1.5 Node[0]  Introducing channel error with code = 0000
 AT Time 2 , Node 0 frame with seq_num = 3 and payload $(plants of the division Magnoliophyta,  is to facilitate reproduction,$ and trailer 10100001 , Modified -1 , Lost No  , Duplicate 0 , Delay 0
-At time 2 Node 0 Sending NACK with number 0 ,loss NOis sender0
-At time 2.1 Node 0 Sending NACK with number 0 ,loss NOis sender0
+At time 2 Node 1 Sending NACK with number 0 ,loss NOis sender0
+At time 2.1 Node 1 Sending NACK with number 0 ,loss NOis sender0
  At time 3 Node[0]  Introducing channel error with code = 1010
 AT Time 3.5 , Node 0 frame with seq_num = 0 and payload $A flower, sometimes $ and trailer 01111110 , Modified -1 , Lost No  , Duplicate 0 , Delay 0
  At time 3.5 Node[0]  Introducing channel error with code = 1010
@@ -19,10 +19,10 @@ AT Time 4.5 , Node 0 frame with seq_num = 1 and payload $known as a bloom or blo
 Uploading payload = A flower, sometimes  seq_num = 0 to network layer 
 AT Time 5 , Node 0 frame with seq_num = 2 and payload $is the reproductive/$ structure found  also called// angiosperms/$).$ and trailer 01000010 , Modified -1 , Lost Yes  , Duplicate 0 , Delay 0
  At time 5 Node[0]  Introducing channel error with code = 0000
-At time 5 Node 0 Sending ACK with number 1 ,loss NOis sender0
+At time 5 Node 1 Sending ACK with number 1 ,loss NOis sender0
 AT Time 5.5 , Node 0 frame with seq_num = 3 and payload $(plants of the division Magnoliophyta,  is to facilitate reproduction,$ and trailer 10100001 , Modified -1 , Lost No  , Duplicate 0 , Delay 0
 Uploading payload = known as a bloom or blossom in flowering plants seq_num = 1 to network layer 
-At time 6 Node 0 Sending ACK with number 2 ,loss NOis sender0
+At time 6 Node 1 Sending ACK with number 2 ,loss NOis sender0
  At time 6 Node[0]  Introducing channel error with code = 0001
 AT Time 6.5 , Node 0 frame with seq_num = 4 and payload $The biological function of /$//a flower  $ and trailer 10110111 , Modified -1 , Lost No  , Duplicate 0 , Delay 4
  At time 7 Node[0]  Introducing channel error with code = 0100
@@ -37,19 +37,19 @@ AT Time 16.5 , Node 0 frame with seq_num = 4 and payload $The biological functio
  At time 16.5 Node[0]  Introducing channel error with code = 0100
 Uploading payload = is the reproductive$ structure found  also called/ angiosperms$). seq_num = 2 to network layer 
 AT Time 17 , Node 0 frame with seq_num = 0 and payload $usually by providing a mechanism for Flowers may facilitate outcrossing/$$ and trailer 00010001 , Modified -1 , Lost Yes  , Duplicate 0 , Delay 0
-At time 17 Node 0 Sending ACK with number 3 ,loss NOis sender0
+At time 17 Node 1 Sending ACK with number 3 ,loss NOis sender0
 Uploading payload = (plants of the division Magnoliophyta,  is to facilitate reproduction, seq_num = 3 to network layer 
-At time 17.5 Node 0 Sending ACK with number 4 ,loss NOis sender0
+At time 17.5 Node 1 Sending ACK with number 4 ,loss NOis sender0
  At time 18 Node[0]  Introducing channel error with code = 0000
 AT Time 18.5 , Node 0 frame with seq_num = 1 and payload $/$/$the union of sperm with eggs.$ and trailer 01110000 , Modified -1 , Lost No  , Duplicate 0 , Delay 0
 Uploading payload = The biological function of $/a flower   seq_num = 4 to network layer 
-At time 22 Node 0 Sending ACK with number 0 ,loss NOis sender0
+At time 22 Node 1 Sending ACK with number 0 ,loss NOis sender0
 Time out event at time 27 Node 0 for frame with seq_num0
  At time 27 Node[0]  Introducing channel error with code = 0100
 AT Time 27.5 , Node 0 frame with seq_num = 0 and payload $usually by providing a mechanism for Flowers may facilitate outcrossing/$$ and trailer 00010001 , Modified -1 , Lost No  , Duplicate 0 , Delay 0
  At time 27.5 Node[0]  Introducing channel error with code = 0000
 AT Time 28 , Node 0 frame with seq_num = 1 and payload $/$/$the union of sperm with eggs.$ and trailer 01110000 , Modified -1 , Lost No  , Duplicate 0 , Delay 0
 Uploading payload = usually by providing a mechanism for Flowers may facilitate outcrossing$ seq_num = 0 to network layer 
-At time 29 Node 0 Sending ACK with number 1 ,loss NOis sender0
+At time 29 Node 1 Sending ACK with number 1 ,loss NOis sender0
 Uploading payload = $$the union of sperm with eggs. seq_num = 1 to network layer 
-At time 29.5 Node 0 Sending ACK with number 2 ,loss NOis sender0
+At time 29.5 Node 1 Sending ACK with number 2 ,loss NOis sender0

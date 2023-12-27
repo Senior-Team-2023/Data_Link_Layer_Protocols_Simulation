@@ -20,6 +20,15 @@ package networks_project;
 //
 simple Node
 {
+    parameters:
+    
+   double PT=default(0.5);
+int WS=default(4);
+double TO=default(10);
+double TD=default(1.0);
+double ED=default(4.0);
+double DD=default(0.1);
+double LP=default(0) ;
       gates:
         inout ino;
         input in;

@@ -49,7 +49,8 @@ protected:
   bool not_processing;
   int the_sender;
   int current_index;
-  virtual void initialize();
+
+    virtual void initialize();
   virtual void handleMessage(cMessage *msg);
 };
 

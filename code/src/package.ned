@@ -11,15 +11,15 @@ network Network
         coordinator: Coordinator {
             @display("p=337,206");
         }
-        node0: Node {
-            @display("p=101,90");
-        }
-        node1: Node {
-            @display("p=556,101");
-        }
+       
+        nodes[2]:Node;
     connections:
-        coordinator.out[0] --> node0.in;
-        coordinator.out[1] --> node1.in;
-        node0.ino <--> node1.ino;
+        coordinator.out[0] --> nodes[0].in;
+        coordinator.out[1] --> nodes[1].in;
+        nodes[0].ino <--> nodes[1].ino;
+
+
+
+
 }
 
