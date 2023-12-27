@@ -13,7 +13,7 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 //
 #include <stdexcept>
-#define WS 3
+#define WS 4
 #define TO 10
 #define TD 1.0
 #define ED 4.0
@@ -42,12 +42,13 @@ void Node::initialize()
 
     if (strcmp(this->getName(), "node0") == 0)
     {
-
+        the_sender = 0;
         inputFile.open("../input0.txt");
     }
     else
     {
         inputFile.open("../input1.txt");
+        the_sender = 1;
     }
     // Check if the file is open
     if (!inputFile.is_open())
@@ -86,17 +87,19 @@ std::string encode(std::string payload, char &checksum)
     //     checksum ^= ch;
     // }
     // checksum = ~checksum;
-    std::bitset<9> temp_checksum(0);
-    for (const auto& c : realFrame) {
-    // cout<<"current char: "<<std::bitset<8>(c)<<endl;
-        temp_checksum =temp_checksum.to_ullong()+ std::bitset<8>(c).to_ullong();
+    int temp_checksum = 0;
+    for (const auto &c : realFrame)
+    {
+        // cout<<"current char: "<<std::bitset<8>(c)<<endl;
+        temp_checksum = temp_checksum + std::bitset<8>(c).to_ullong();
+        if (temp_checksum > 255)
+        {
+            temp_checksum += 1 - 256;
+        }
     }
-    std::bitset<8> res(0);
-    for (int i = 0; i < res.size(); i++) {
-    res[i] = temp_checksum[i];
-} 
-    res = temp_checksum[temp_checksum.size() - 1] + res.to_ullong();
-    res =  res.flip();
+    std::bitset<8> res(temp_checksum);
+
+    res = res.flip();
     checksum = static_cast<char>(res.to_ulong());
     return realFrame;
 }
@@ -106,11 +109,26 @@ std::string decode(std::string frame, char checksum, bool &acknowledge)
     std::string realPayload = "";
 
     char realchecksum = 0;
-    for (char ch : frame)
+    // for (char ch : frame)
+    // {
+    //     realchecksum ^= ch;
+    // }
+    // realchecksum ^= checksum;
+    int temp_checksum = 0;
+    for (const auto &c : frame)
     {
-        realchecksum ^= ch;
+        // cout<<"current char: "<<std::bitset<8>(c)<<endl;
+        temp_checksum = temp_checksum + std::bitset<8>(c).to_ullong();
+        if (temp_checksum > 255)
+        {
+            temp_checksum += 1 - 256;
+        }
     }
-    realchecksum ^= checksum;
+
+    std::bitset<8> res(temp_checksum);
+
+    res = res.flip();
+    realchecksum = static_cast<char>(res.to_ulong());
 
     for (int i = 1; i < frame.length() - 1; i++)
     {
@@ -122,10 +140,11 @@ std::string decode(std::string frame, char checksum, bool &acknowledge)
     }
     // char checksum = frame[frame.length() - 1];
 
-    std::bitset<CHAR_BIT> binaryRepresentation(realchecksum);
+    // std::bitset<CHAR_BIT> binaryRepresentation(realchecksum);
 
-    std::bitset<CHAR_BIT> comparisonBitset("11111111");
-    if (binaryRepresentation == comparisonBitset) // okay send ack
+    // std::bitset<CHAR_BIT> comparisonBitset("11111111");
+    // if (binaryRepresentation == comparisonBitset) // okay send ack
+    if (checksum == realchecksum)
         acknowledge = true;
     else
         acknowledge = false;
@@ -141,7 +160,6 @@ void Node::handleMessage(cMessage *msg)
 
     try
     {
-        std::ofstream outFile("../log.txt", std::ios::app);
 
         // TODO - Generated method body
         MyMessage_Base *mmsg = check_and_cast<MyMessage_Base *>(msg);
@@ -150,6 +168,15 @@ void Node::handleMessage(cMessage *msg)
 
         if (mmsg->getFrame_type() == '3') // the message is for start sending from coordinator
         {
+            std::ofstream outFile("../log.txt", std::ios::trunc);
+
+            if (!outFile)
+            {
+                std::cerr << "Error opening file for truncation." << std::endl;
+            }
+
+            // Close the file
+            outFile.close();
             isSender = true;
 
             current_index = 0;
@@ -160,7 +187,13 @@ void Node::handleMessage(cMessage *msg)
             }
         }
 
+        // if (isSender)
+        // {
+        //     outFile << " the file size " << time_outs.size() << " window size " << window_messages.size() << endl;
+        // }
+
         //   at sendet nack found
+        std::ofstream outFile("../log.txt", std::ios::app);
 
         if (isSender == true && mmsg->getFrame_type() == '0' && !msg->isSelfMessage()) // nack message from reci//EVer
         {
@@ -172,8 +205,16 @@ void Node::handleMessage(cMessage *msg)
                 start++;
                 start %= (WS + 1);
                 // we are gonna consider all before nacks as acks
-                time_outs.insert(time_outs.begin() + start, -1);
+                time_outs[start] = -1;
             }
+
+            // for (auto it : time_outs)
+            // {
+
+            //     // Print the elements
+            //     outFile << it << ' ';
+            // }
+            // outFile << time_outs.size() << endl;
 
             //  get the count of elemnts before the acks to move the index in file
             int fake_start = mmsg->getAck_nack_numb();
@@ -205,21 +246,30 @@ void Node::handleMessage(cMessage *msg)
             while (start != mmsg->getAck_nack_numb())
 
             {
+                time_outs[start] = -1;
                 start++;
                 start %= (WS + 1);
                 messgs_in_window--;
                 // we are gonna consider all before ack as acked (accumulative acks)
-                time_outs.insert(time_outs.begin() + start, -1);
             }
+
+            //     for (auto it : time_outs)
+            //     {
+
+            //         // Print the elements
+            //         outFile << it << ' ';
+            //     }
+            //     outFile << time_outs.size() << endl;
         }
 
         // AT reci//EVer data found and sending ack and nack
-        if (mmsg->getFrame_type() == '2' && !msg->isSelfMessage()) // the message is data reci//EVed
+        if (mmsg->getFrame_type() == '2' && !msg->isSelfMessage() && !isSender) // the message is data reci//EVed
         {
 
             bool acknowledge;
             std::string payload = decode(mmsg->getPayload(), mmsg->getTrailer(), acknowledge);
             MyMessage_Base *ack = new MyMessage_Base();
+            // correct and is expected
             if (acknowledge == true && reciever_expected_seq_numb == mmsg->getHeader())
             {
 
@@ -248,7 +298,8 @@ void Node::handleMessage(cMessage *msg)
                 // cancelAndDelete(mmsg);
                 cancelAndDelete(msg);
             }
-            else if (acknowledge == false || reciever_expected_seq_numb == mmsg->getHeader())
+
+            else if (acknowledge == false && reciever_expected_seq_numb == mmsg->getHeader())
             {
                 ack->setFrame_type('0'); // nack
                 ack->setAck_nack_numb(reciever_expected_seq_numb);
@@ -272,13 +323,13 @@ void Node::handleMessage(cMessage *msg)
             }
             else if (reciever_expected_seq_numb != mmsg->getHeader())
             {
-                ack->setFrame_type('1'); // ack
+                // ack->setFrame_type('1'); // ack
 
-                ack->setAck_nack_numb(reciever_expected_seq_numb);
-                ack->setPayload(payload.c_str());
-                ack->setName("processing_done");
-                ack->setHeader(-2);
-                scheduleAt(simTime() + PT, ack);
+                // ack->setAck_nack_numb(reciever_expected_seq_numb);
+                // ack->setPayload(payload.c_str());
+                // ack->setName("processing_done");
+                // ack->setHeader(-2);
+                // scheduleAt(simTime() + PT, ack);
             }
             // send(ack, "ino$o");
         }
@@ -305,15 +356,15 @@ void Node::handleMessage(cMessage *msg)
             if (strcmp(msg->getName(), "processing_done") == 0) // to separate last loop
             {
 
-                if (mmsg->getFrame_type() == '1' || mmsg->getFrame_type() == '0')
+                if ((mmsg->getFrame_type() == '1' || mmsg->getFrame_type() == '0') && !isSender)
                 {
                     // At time[.. starting sending time after processing….. ], Node[id] Sending [ACK/NACK] with
                     // number[…], loss[Yes / No]
                     std::string ctrl = (mmsg->getFrame_type() == '1') ? "ACK with number " : "NACK with number ";
                     std::string is_lost = (mmsg->getHeader() == -1) ? " ,loss Yes" : " ,loss NO";
-                    EV << "At time " << simTime() << " Node " << this->getIndex() << " Sending " << ctrl << mmsg->getAck_nack_numb() << is_lost << endl;
+                    EV << "At time " << simTime() << " Node " << 1 - the_sender << " Sending " << ctrl << mmsg->getAck_nack_numb() << is_lost << endl;
 
-                    outFile << "At time " << simTime() << " Node " << this->getIndex() << " Sending " << ctrl << mmsg->getAck_nack_numb() << is_lost << endl;
+                    outFile << "At time " << simTime() << " Node " << 1 - the_sender << " Sending " << ctrl << mmsg->getAck_nack_numb() << is_lost << "is sender" << isSender << endl;
                 }
 
                 not_processing = true;
@@ -321,10 +372,10 @@ void Node::handleMessage(cMessage *msg)
                 scheduleAt(simTime() + TD, mmsg);
 
                 //  an alarm to wake up after the TO delay
-                if (mmsg->getFrame_type() == '2')
+                if (mmsg->getFrame_type() == '2' && isSender)
                 {
 
-                    EV << "AT Time " << simTime() << " , Node " << this->getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
+                    EV << "AT Time " << simTime() << " , Node " << the_sender << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
                        << " , Modified "
                        << mmsg->getAck_nack_numb()
                        << " , Lost "
@@ -333,7 +384,7 @@ void Node::handleMessage(cMessage *msg)
                        << 0
                        << " , Delay "
                        << 0 << endl;
-                    outFile << "AT Time " << simTime() << " , Node " << this->getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
+                    outFile << "AT Time " << simTime() << " , Node " << the_sender << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
                             << " , Modified "
                             << mmsg->getAck_nack_numb()
                             << " , Lost "
@@ -348,13 +399,20 @@ void Node::handleMessage(cMessage *msg)
                     simtime_t current_time = simTime();
                     scheduleAt(current_time + TO, wake_up);
 
-                    time_outs.insert(time_outs.begin() + mmsg->getHeader(), current_time + TO);
+                    time_outs[mmsg->getHeader()] = current_time + TO;
+                    // for (auto it : time_outs)
+                    // {
+
+                    //     // Print the elements
+                    //     outFile << it << ' ';
+                    // }
+                    // outFile << time_outs.size() << endl;
                 }
             }
-            else if (strcmp(msg->getName(), "processing_done_delay") == 0) // to separate last loop
+            else if ((strcmp(msg->getName(), "processing_done_delay") == 0) && isSender) // to separate last loop
             {
 
-                EV << "AT Time " << simTime() << " , Node " << this->getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
+                EV << "AT Time " << simTime() << " , Node " << the_sender << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
                    << " , Modified "
                    << mmsg->getAck_nack_numb()
                    << " , Lost "
@@ -363,7 +421,7 @@ void Node::handleMessage(cMessage *msg)
                    << 0
                    << " , Delay "
                    << ED << endl;
-                outFile << "AT Time " << simTime() << " , Node " << this->getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
+                outFile << "AT Time " << simTime() << " , Node " << the_sender << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
                         << " , Modified "
                         << mmsg->getAck_nack_numb()
                         << " , Lost "
@@ -383,14 +441,20 @@ void Node::handleMessage(cMessage *msg)
                     wake_up->setHeader(mmsg->getHeader());
                     simtime_t current_time = simTime();
                     scheduleAt(current_time + TO, wake_up);
+                    time_outs[mmsg->getHeader()] = current_time + TO;
+                    // for (auto it : time_outs)
+                    // {
 
-                    time_outs.insert(time_outs.begin() + mmsg->getHeader(), current_time + TO);
+                    //     // Print the elements
+                    //     outFile << it << ' ';
+                    // }
+                    // outFile << time_outs.size() << endl;
                 }
             }
-            else if (strcmp(msg->getName(), "processing_done_dup") == 0) // to separate last loop
+            else if ((strcmp(msg->getName(), "processing_done_dup") == 0) && isSender) // to separate last loop
             {
 
-                EV << "AT Time " << simTime() << " , Node " << this->getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
+                EV << "AT Time " << simTime() << " , Node " << the_sender << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
                    << " , Modified "
                    << mmsg->getAck_nack_numb()
                    << " , Lost "
@@ -400,7 +464,7 @@ void Node::handleMessage(cMessage *msg)
                    << " , Delay "
                    << 0 << endl;
 
-                EV << "AT Time " << simTime() << " , Node " << this->getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
+                EV << "AT Time " << simTime() << " , Node " << the_sender << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
                    << " , Modified "
                    << mmsg->getAck_nack_numb()
                    << " , Lost "
@@ -409,7 +473,7 @@ void Node::handleMessage(cMessage *msg)
                    << 2
                    << " , Delay "
                    << DD << endl;
-                outFile << "AT Time " << simTime() << " , Node " << this->getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
+                outFile << "AT Time " << simTime() << " , Node " << the_sender << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
                         << " , Modified "
                         << mmsg->getAck_nack_numb()
                         << " , Lost "
@@ -419,7 +483,7 @@ void Node::handleMessage(cMessage *msg)
                         << " , Delay "
                         << 0 << endl;
 
-                outFile << "AT Time " << simTime() << " , Node " << this->getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
+                outFile << "AT Time " << simTime() << " , Node " << the_sender << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
                         << " , Modified "
                         << mmsg->getAck_nack_numb()
                         << " , Lost "
@@ -447,13 +511,20 @@ void Node::handleMessage(cMessage *msg)
                     simtime_t current_time = simTime();
                     scheduleAt(current_time + TO, wake_up);
 
-                    time_outs.insert(time_outs.begin() + mmsg->getHeader(), current_time + TO);
+                    time_outs[mmsg->getHeader()] = current_time + TO;
+                    // for (auto it : time_outs)
+                    // {
+
+                    //     // Print the elements
+                    //     outFile << it << ' ';
+                    // }
+                    // outFile << time_outs.size() << endl;
                 }
             }
-            else if (strcmp(msg->getName(), "processing_done_dup_delay") == 0) // to separate last loop
+            else if ((strcmp(msg->getName(), "processing_done_dup_delay") == 0 && isSender)) // to separate last loop
             {
 
-                EV << "AT Time " << simTime() << " , Node " << this->getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
+                EV << "AT Time " << simTime() << " , Node " << the_sender << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
                    << " , Modified "
                    << mmsg->getAck_nack_numb()
                    << " , Lost "
@@ -463,7 +534,7 @@ void Node::handleMessage(cMessage *msg)
                    << " , Delay "
                    << ED << endl;
 
-                EV << "AT Time " << simTime() << " , Node " << this->getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
+                EV << "AT Time " << simTime() << " , Node " << the_sender << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
                    << " , Modified "
                    << mmsg->getAck_nack_numb()
                    << " , Lost "
@@ -472,7 +543,7 @@ void Node::handleMessage(cMessage *msg)
                    << 2
                    << " , Delay "
                    << DD + ED << endl;
-                outFile << "AT Time " << simTime() << " , Node " << this->getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
+                outFile << "AT Time " << simTime() << " , Node " << the_sender << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
                         << " , Modified "
                         << mmsg->getAck_nack_numb()
                         << " , Lost "
@@ -482,7 +553,7 @@ void Node::handleMessage(cMessage *msg)
                         << " , Delay "
                         << ED << endl;
 
-                outFile << "AT Time " << simTime() << " , Node " << this->getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
+                outFile << "AT Time " << simTime() << " , Node " << the_sender << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
                         << " , Modified "
                         << mmsg->getAck_nack_numb()
                         << " , Lost "
@@ -510,12 +581,19 @@ void Node::handleMessage(cMessage *msg)
                     simtime_t current_time = simTime();
                     scheduleAt(current_time + TO, wake_up);
 
-                    time_outs.insert(time_outs.begin() + mmsg->getHeader(), current_time + TO);
+                    time_outs[mmsg->getHeader()] = current_time + TO;
+                    // for (auto it : time_outs)
+                    // {
+
+                    //     // Print the elements
+                    //     outFile << it << ' ';
+                    // }
+                    // outFile << time_outs.size() << endl;
                 }
             }
-            else if (strcmp(msg->getName(), "processing_done_loss") == 0) // to separate last loop
+            else if ((strcmp(msg->getName(), "processing_done_loss") == 0) && isSender) // to separate last loop
             {
-                EV << "AT Time " << simTime() << " , Node " << this->getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
+                EV << "AT Time " << simTime() << " , Node " << the_sender << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
                    << " , Modified "
                    << mmsg->getAck_nack_numb()
                    << " , Lost "
@@ -524,7 +602,7 @@ void Node::handleMessage(cMessage *msg)
                    << 0
                    << " , Delay "
                    << 0 << endl;
-                outFile << "AT Time " << simTime() << " , Node " << this->getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
+                outFile << "AT Time " << simTime() << " , Node " << the_sender << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
                         << " , Modified "
                         << mmsg->getAck_nack_numb()
                         << " , Lost "
@@ -552,22 +630,36 @@ void Node::handleMessage(cMessage *msg)
                     simtime_t current_time = simTime();
                     scheduleAt(current_time + TO, wake_up);
 
-                    time_outs.insert(time_outs.begin() + mmsg->getHeader(), current_time + TO);
+                    time_outs[mmsg->getHeader()] = current_time + TO;
+                    // for (auto it : time_outs)
+                    // {
+
+                    //     // Print the elements
+                    //     outFile << it << ' ';
+                    // }
+                    // outFile << time_outs.size() << endl;
                 }
             }
 
             // it's after a timeout
-            else if (strcmp(msg->getName(), "timeout") == 0 && isSender == true)
+            else if ((strcmp(msg->getName(), "timeout") == 0) && isSender == true)
             {
                 // Time out event at time [.. timer off-time….. ], at Node[id] for frame with seq_num=[..]
 
+                // for (auto it : time_outs)
+                // {
+
+                //     // Print the elements
+                //     outFile << it << ' ';
+                // }
+                // outFile << endl;
                 // EV<<""
                 // law not tamm so there is a timeout
                 if (!(time_outs[mmsg->getHeader()] == -1 || time_outs[mmsg->getHeader()] > simTime()))
                 {
 
-                    EV << "Time out event at time " << simTime() << " Node " << this->getIndex() << " for frame with seq_num" << mmsg->getHeader() << endl;
-                    outFile << "Time out event at time " << simTime() << " Node " << this->getIndex() << " for frame with seq_num" << mmsg->getHeader() << endl;
+                    EV << "Time out event at time " << simTime() << " Node " << the_sender << " for frame with seq_num" << mmsg->getHeader() << endl;
+                    outFile << "Time out event at time " << simTime() << " Node " << the_sender << " for frame with seq_num" << mmsg->getHeader() << endl;
 
                     int fake_start = mmsg->getHeader();
                     int counter = 0;
@@ -579,8 +671,15 @@ void Node::handleMessage(cMessage *msg)
                         fake_start++;
                         fake_start %= (WS + 1);
                         messgs_in_window--;
-                        time_outs.insert(time_outs.begin() + fake_start, -1);
+                        time_outs[fake_start] = -1;
                     }
+                    // for (auto it : time_outs)
+                    // {
+
+                    //     // Print the elements
+                    //     outFile << it << ' ';
+                    // }
+                    // outFile << time_outs.size() << endl;
                     current_index -= counter;
 
                     // start = mmsg->getHeader();
@@ -595,7 +694,7 @@ void Node::handleMessage(cMessage *msg)
             else
             {
                 // if ack or nack with LP
-                if (mmsg->getFrame_type() == '1' || mmsg->getFrame_type() == '0')
+                if ((mmsg->getFrame_type() == '1' || mmsg->getFrame_type() == '0') && isSender)
                 {
                     std::cout << " tracing 1\n";
                     // it's  not a loss in ackk or nack
@@ -642,20 +741,20 @@ void Node::handleMessage(cMessage *msg)
             // At time [.. starting processing time….. ], Node[id] , Introducing channel error with code
             // =[ …code in 4 bits… ]
 
-            EV << " At time " << simTime() << " Node[" << this->getIndex() << "]  Introducing channel error with code = " << errors << endl;
-            outFile << " At time " << simTime() << " Node[" << this->getIndex() << "]  Introducing channel error with code = " << errors << endl;
+            EV << " At time " << simTime() << " Node[" << the_sender << "]  Introducing channel error with code = " << errors << endl;
+            outFile << " At time " << simTime() << " Node[" << the_sender << "]  Introducing channel error with code = " << errors << endl;
 
             if (start == -1) // lesa bensamy
             {
                 start = 0;
                 end = 1;
                 newMesg->setHeader(end - 1);
-                window_messages.insert(window_messages.begin(), newMesg);
+                window_messages[0] = newMesg;
             }
             else // el 3ady
             {
+                window_messages[end] = newMesg;
 
-                window_messages.insert(window_messages.begin() + end, newMesg);
                 newMesg->setHeader(end);
                 end++;
 

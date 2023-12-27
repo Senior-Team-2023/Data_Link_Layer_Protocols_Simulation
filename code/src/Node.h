@@ -47,7 +47,7 @@ protected:
   bool no_error_messages;
   bool isSender;
   bool not_processing;
-
+  int the_sender;
   int current_index;
   virtual void initialize();
   virtual void handleMessage(cMessage *msg);
