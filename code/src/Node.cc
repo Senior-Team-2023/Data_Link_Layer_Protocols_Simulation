@@ -274,8 +274,8 @@ void Node::handleMessage(cMessage *msg)
             {
 
                 // Uploading payload = […..] and seq_num = […] to the network layer
-                EV << "Uploading payload = " << payload << " seq_num = " << mmsg->getHeader() << " to network layer " << endl;
-                outFile << "Uploading payload = " << payload << " seq_num = " << mmsg->getHeader() << " to network layer " << endl;
+                EV << "Uploading payload = [" << payload << "] seq_num = [" << mmsg->getHeader() << "] to network layer " << endl;
+                outFile << "Uploading payload = [" << payload << "] seq_num = [" << mmsg->getHeader() << "] to network layer " << endl;
 
                 ack->setFrame_type('1'); // ack
                 reciever_expected_seq_numb += 1;
@@ -286,6 +286,7 @@ void Node::handleMessage(cMessage *msg)
                 float er = uniform(0, 1);
                 if (er <= LP)
                 {
+                    // outFile << "LOSTTTTTTTTTTT" << endl;
                     //  so it's a loss
                     ack->setHeader(-1);
                 }
@@ -362,11 +363,11 @@ void Node::handleMessage(cMessage *msg)
 
                     // At time[.. starting sending time after processing….. ], Node[id] Sending [ACK/NACK] with
                     // number[…], loss[Yes / No]
-                    std::string ctrl = (mmsg->getFrame_type() == '1') ? "ACK with number " : "NACK with number ";
+                    std::string ctrl = (mmsg->getFrame_type() == '1') ? "ACK with number [" : "NACK with number [";
                     std::string is_lost = (mmsg->getHeader() == -1) ? " ,loss Yes" : " ,loss NO";
-                    EV << "At time " << simTime() << " Node " << getIndex() << " Sending " << ctrl << mmsg->getAck_nack_numb() << is_lost << endl;
+                    EV << "At time [" << simTime() << "] Node [" << getIndex() << "] Sending " << ctrl << mmsg->getAck_nack_numb() << "] " << is_lost << endl;
 
-                    outFile << "At time " << simTime() << " Node " << getIndex() << " Sending " << ctrl << mmsg->getAck_nack_numb() << is_lost << "is sender" << isSender << endl;
+                    outFile << "At time [" << simTime() << "] Node [" << getIndex() << "] Sending " << ctrl << mmsg->getAck_nack_numb() << "] " << is_lost << endl;
                 }
 
                 not_processing = true;
@@ -386,15 +387,15 @@ void Node::handleMessage(cMessage *msg)
                        << 0
                        << " , Delay "
                        << 0 << endl;
-                    outFile << "AT Time " << simTime() << " , Node " << getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
-                            << " , Modified "
+                    outFile << "AT Time [" << simTime() << "] , Node [" << getIndex() << "] frame with seq_num = [" << mmsg->getHeader() << "] and payload [" << mmsg->getPayload() << "] and trailer [" << binaryRepresentation
+                            << "] , Modified ["
                             << mmsg->getAck_nack_numb()
-                            << " , Lost "
+                            << "] , Lost "
                             << "No "
-                            << " , Duplicate "
+                            << " , Duplicate ["
                             << 0
-                            << " , Delay "
-                            << 0 << endl;
+                            << "] , Delay ["
+                            << 0 << "]" << endl;
                     MyMessage_Base *wake_up = new MyMessage_Base();
                     wake_up->setName("timeout");
                     wake_up->setHeader(mmsg->getHeader());
@@ -423,15 +424,15 @@ void Node::handleMessage(cMessage *msg)
                    << 0
                    << " , Delay "
                    << ED << endl;
-                outFile << "AT Time " << simTime() << " , Node " << getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
-                        << " , Modified "
+                outFile << "AT Time [" << simTime() << "] , Node [" << getIndex() << "] frame with seq_num = [" << mmsg->getHeader() << "] and payload [" << mmsg->getPayload() << "] and trailer [" << binaryRepresentation
+                        << "] , Modified ["
                         << mmsg->getAck_nack_numb()
-                        << " , Lost "
+                        << "] , Lost "
                         << "No "
                         << " , Duplicate "
                         << 0
-                        << " , Delay "
-                        << ED << endl;
+                        << " , Delay ["
+                        << ED << "] " << endl;
                 not_processing = true;
                 msg->setName("");
                 scheduleAt(simTime() + TD + ED, mmsg);
@@ -475,25 +476,25 @@ void Node::handleMessage(cMessage *msg)
                    << 2
                    << " , Delay "
                    << DD << endl;
-                outFile << "AT Time " << simTime() << " , Node " << getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
-                        << " , Modified "
+                outFile << "AT Time [" << simTime() << "] , Node [" << getIndex() << "] frame with seq_num = [" << mmsg->getHeader() << "] and payload [" << mmsg->getPayload() << "] and trailer [" << binaryRepresentation
+                        << "] , Modified ["
                         << mmsg->getAck_nack_numb()
-                        << " , Lost "
+                        << "] , Lost "
                         << "No "
                         << " , Duplicate "
                         << 1
-                        << " , Delay "
-                        << 0 << endl;
-
-                outFile << "AT Time " << simTime() << " , Node " << getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
-                        << " , Modified "
+                        << " , Delay ["
+                        << 0 << "] " << endl;
+                outFile << "AT Time [" << simTime() << "] , Node [" << getIndex() << "] frame with seq_num = [" << mmsg->getHeader() << "] and payload [" << mmsg->getPayload() << "] and trailer [" << binaryRepresentation
+                        << "] , Modified ["
                         << mmsg->getAck_nack_numb()
-                        << " , Lost "
+                        << "] , Lost "
                         << "No "
                         << " , Duplicate "
                         << 2
-                        << " , Delay "
-                        << DD << endl;
+                        << " , Delay ["
+                        << DD << "] " << endl;
+
                 not_processing = true;
                 msg->setName("");
                 MyMessage_Base *dup_msg = new MyMessage_Base();
@@ -545,25 +546,26 @@ void Node::handleMessage(cMessage *msg)
                    << 2
                    << " , Delay "
                    << DD + ED << endl;
-                outFile << "AT Time " << simTime() << " , Node " << getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
-                        << " , Modified "
+
+                outFile << "AT Time [" << simTime() << "] , Node [" << getIndex() << "] frame with seq_num = [" << mmsg->getHeader() << "] and payload [" << mmsg->getPayload() << "] and trailer [" << binaryRepresentation
+                        << "] , Modified ["
                         << mmsg->getAck_nack_numb()
-                        << " , Lost "
+                        << "] , Lost "
                         << "No "
                         << " , Duplicate "
                         << 1
-                        << " , Delay "
-                        << ED << endl;
-
-                outFile << "AT Time " << simTime() << " , Node " << getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
-                        << " , Modified "
+                        << " , Delay ["
+                        << ED << "] " << endl;
+                outFile << "AT Time [" << simTime() << "] , Node [" << getIndex() << "] frame with seq_num = [" << mmsg->getHeader() << "] and payload [" << mmsg->getPayload() << "] and trailer [" << binaryRepresentation
+                        << "] , Modified ["
                         << mmsg->getAck_nack_numb()
-                        << " , Lost "
+                        << "] , Lost "
                         << "No "
                         << " , Duplicate "
                         << 2
-                        << " , Delay "
-                        << DD + ED << endl;
+                        << " , Delay ["
+                        << ED + DD << "] " << endl;
+
                 not_processing = true;
                 msg->setName("");
                 MyMessage_Base *dup_msg = new MyMessage_Base();
@@ -595,25 +597,69 @@ void Node::handleMessage(cMessage *msg)
             }
             else if ((strcmp(msg->getName(), "processing_done_loss") == 0) && isSender) // to separate last loop
             {
+                char modd = loss_error[0];
+                char losss = loss_error[1];
+                char dupp = loss_error[2];
+                char delayy = loss_error[3];
+                float delay_val = 0;
+                int modifiedd = -1;
+                int duplicated_index = 0;
+                if (delayy == '1')
+                {
+                    delay_val = ED;
+                }
+                if (modd == '1')
+                {
+
+                    modifiedd = 5;
+                }
+                if (dupp == '1')
+                {
+                    duplicated_index = 1;
+                }
                 EV << "AT Time " << simTime() << " , Node " << getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
                    << " , Modified "
-                   << mmsg->getAck_nack_numb()
+                   << modifiedd
                    << " , Lost "
                    << "Yes "
                    << " , Duplicate "
-                   << 0
+                   << duplicated_index
                    << " , Delay "
-                   << 0 << endl;
-                outFile << "AT Time " << simTime() << " , Node " << getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
-                        << " , Modified "
-                        << mmsg->getAck_nack_numb()
-                        << " , Lost "
+                   << delay_val << endl;
+                outFile << "AT Time [" << simTime() << "] , Node [" << getIndex() << "] frame with seq_num = [" << mmsg->getHeader() << "] and payload [" << mmsg->getPayload() << "] and trailer [" << binaryRepresentation
+                        << "] , Modified ["
+                        << modifiedd
+                        << "] , Lost "
                         << "Yes "
                         << " , Duplicate "
-                        << 0
-                        << " , Delay "
-                        << 0 << endl;
+                        << duplicated_index
+                        << " , Delay ["
+                        << delay_val << "] " << endl;
+
+                if (modd == '1')
+                {
+                    EV << "AT Time " << simTime() << " , Node " << getIndex() << " frame with seq_num = " << mmsg->getHeader() << " and payload " << mmsg->getPayload() << " and trailer " << binaryRepresentation
+                       << " , Modified "
+                       << modifiedd
+                       << " , Lost "
+                       << "Yes "
+                       << " , Duplicate "
+                       << 1
+                       << " , Delay "
+                       << delay_val + DD << endl;
+                    outFile << "AT Time [" << simTime() << "] , Node [" << getIndex() << "] frame with seq_num = [" << mmsg->getHeader() << "] and payload [" << mmsg->getPayload() << "] and trailer [" << binaryRepresentation
+                            << "] , Modified ["
+                            << modifiedd
+                            << "] , Lost "
+                            << "Yes "
+                            << " , Duplicate "
+                            << 2
+                            << " , Delay ["
+                            << delay_val + DD << "] " << endl;
+                }
+
                 not_processing = true;
+
                 // msg->setName("");
                 // MyMessage_Base *dup_msg = new MyMessage_Base();
                 // dup_msg->setPayload(mmsg->getPayload());
@@ -660,8 +706,8 @@ void Node::handleMessage(cMessage *msg)
                 if (!(time_outs[mmsg->getHeader()] == -1 || time_outs[mmsg->getHeader()] > simTime()))
                 {
 
-                    EV << "Time out event at time " << simTime() << " Node " << getIndex() << " for frame with seq_num" << mmsg->getHeader() << endl;
-                    outFile << "Time out event at time " << simTime() << " Node " << getIndex() << " for frame with seq_num" << mmsg->getHeader() << endl;
+                    EV << "Time out event at time [" << simTime() << "] Node [" << getIndex() << "] for frame with seq_num [" << mmsg->getHeader() << "]" << endl;
+                    outFile << "Time out event at time [" << simTime() << "] Node [" << getIndex() << "] for frame with seq_num [" << mmsg->getHeader() << "]" << endl;
 
                     int fake_start = mmsg->getHeader();
                     int counter = 0;
@@ -696,9 +742,9 @@ void Node::handleMessage(cMessage *msg)
             else
             {
                 // if ack or nack with LP
-                if ((mmsg->getFrame_type() == '1' || mmsg->getFrame_type() == '0') && isSender)
+                if ((mmsg->getFrame_type() == '1' || mmsg->getFrame_type() == '0') && !isSender)
                 {
-                    std::cout << " tracing 1\n";
+                    std::cout << " HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH\n";
                     // it's  not a loss in ackk or nack
                     if (mmsg->getHeader() == -2)
                     {
@@ -790,7 +836,7 @@ void Node::handleMessage(cMessage *msg)
                     int count = realFrame.length();
                     int random_index = int(uniform(0, count - 1));
                     int random_shift = int(uniform(0, 7));
-
+                    count_for_loss = count;
                     // 1000 1111
                     // 0000 0100 peter
                     // 7-randomshirt
@@ -840,6 +886,7 @@ void Node::handleMessage(cMessage *msg)
                 if (loss == '1')
                 {
                     newMesg->setName("processing_done_loss");
+                    loss_error = errors;
                     scheduleAt(simTime() + PT, newMesg);
                 }
             }

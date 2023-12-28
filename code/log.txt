@@ -1,55 +1,63 @@
- At time 0 Node[0]  Introducing channel error with code = 1010
-AT Time 0.5 , Node 0 frame with seq_num = 0 and payload $A flower, cometimes $ and trailer 01111110 , Modified 91 , Lost No  , Duplicate 1 , Delay 0
-AT Time 0.5 , Node 0 frame with seq_num = 0 and payload $A flower, cometimes $ and trailer 01111110 , Modified 91 , Lost No  , Duplicate 2 , Delay 0.1
- At time 0.5 Node[0]  Introducing channel error with code = 0000
-AT Time 1 , Node 0 frame with seq_num = 1 and payload $known as a bloom or blossom in flowering plants$ and trailer 00010101 , Modified -1 , Lost No  , Duplicate 0 , Delay 0
- At time 1 Node[0]  Introducing channel error with code = 0100
-AT Time 1.5 , Node 0 frame with seq_num = 2 and payload $is the reproductive/$ structure found  also called// angiosperms/$).$ and trailer 01000010 , Modified -1 , Lost Yes  , Duplicate 0 , Delay 0
- At time 1.5 Node[0]  Introducing channel error with code = 0000
-AT Time 2 , Node 0 frame with seq_num = 3 and payload $(plants of the division Magnoliophyta,  is to facilitate reproduction,$ and trailer 10100001 , Modified -1 , Lost No  , Duplicate 0 , Delay 0
-At time 2 Node 1 Sending NACK with number 0 ,loss NOis sender0
-At time 2.1 Node 1 Sending NACK with number 0 ,loss NOis sender0
- At time 3 Node[0]  Introducing channel error with code = 1010
-AT Time 3.5 , Node 0 frame with seq_num = 0 and payload $A flower, sometimes $ and trailer 01111110 , Modified -1 , Lost No  , Duplicate 0 , Delay 0
- At time 3.5 Node[0]  Introducing channel error with code = 1010
-AT Time 4 , Node 0 frame with seq_num = 0 and payload $A flower, sometimes $ and trailer 01111110 , Modified -1 , Lost No  , Duplicate 0 , Delay 0
- At time 4 Node[0]  Introducing channel error with code = 0000
-AT Time 4.5 , Node 0 frame with seq_num = 1 and payload $known as a bloom or blossom in flowering plants$ and trailer 00010101 , Modified -1 , Lost No  , Duplicate 0 , Delay 0
- At time 4.5 Node[0]  Introducing channel error with code = 0100
-Uploading payload = A flower, sometimes  seq_num = 0 to network layer 
-AT Time 5 , Node 0 frame with seq_num = 2 and payload $is the reproductive/$ structure found  also called// angiosperms/$).$ and trailer 01000010 , Modified -1 , Lost Yes  , Duplicate 0 , Delay 0
- At time 5 Node[0]  Introducing channel error with code = 0000
-At time 5 Node 1 Sending ACK with number 1 ,loss NOis sender0
-AT Time 5.5 , Node 0 frame with seq_num = 3 and payload $(plants of the division Magnoliophyta,  is to facilitate reproduction,$ and trailer 10100001 , Modified -1 , Lost No  , Duplicate 0 , Delay 0
-Uploading payload = known as a bloom or blossom in flowering plants seq_num = 1 to network layer 
-At time 6 Node 1 Sending ACK with number 2 ,loss NOis sender0
- At time 6 Node[0]  Introducing channel error with code = 0001
-AT Time 6.5 , Node 0 frame with seq_num = 4 and payload $The biological function of /$//a flower  $ and trailer 10110111 , Modified -1 , Lost No  , Duplicate 0 , Delay 4
- At time 7 Node[0]  Introducing channel error with code = 0100
-AT Time 7.5 , Node 0 frame with seq_num = 0 and payload $usually by providing a mechanism for Flowers may facilitate outcrossing/$$ and trailer 00010001 , Modified -1 , Lost Yes  , Duplicate 0 , Delay 0
-Time out event at time 15 Node 0 for frame with seq_num2
- At time 15 Node[0]  Introducing channel error with code = 0100
-AT Time 15.5 , Node 0 frame with seq_num = 2 and payload $is the reproductive/$ structure found  also called// angiosperms/$).$ and trailer 01000010 , Modified -1 , Lost No  , Duplicate 0 , Delay 0
+ At time 0 Node[0]  Introducing channel error with code = 0000
+AT Time [0.5] , Node [0] frame with seq_num = [0] and payload [$0_/$Hello/$Iam$] and trailer [01110011] , Modified [-1] , Lost No  , Duplicate [0] , Delay [0]
+ At time 0.5 Node[0]  Introducing channel error with code = 0001
+AT Time [1] , Node [0] frame with seq_num = [1] and payload [$1_////your$] and trailer [10011001] , Modified [-1] , Lost No  , Duplicate 0 , Delay [4] 
+ At time 1 Node[0]  Introducing channel error with code = 0010
+AT Time [1.5] , Node [0] frame with seq_num = [2] and payload [$2_networks$] and trailer [10100101] , Modified [-1] , Lost No  , Duplicate 1 , Delay [0] 
+AT Time [1.5] , Node [0] frame with seq_num = [2] and payload [$2_networks$] and trailer [10100101] , Modified [-1] , Lost No  , Duplicate 2 , Delay [0.1] 
+Uploading payload = [0_$Hello$Iam] seq_num = [0] to network layer 
+At time [2] Node [1] Sending ACK with number [1]  ,loss NO
+ At time 3 Node[0]  Introducing channel error with code = 0000
+AT Time [3.5] , Node [0] frame with seq_num = [3] and payload [$3_simulator$] and trailer [01000001] , Modified [-1] , Lost No  , Duplicate [0] , Delay [0]
+Uploading payload = [1_//your] seq_num = [1] to network layer 
+At time [6.5] Node [1] Sending ACK with number [2]  ,loss NO
+ At time 7.5 Node[0]  Introducing channel error with code = 1000
+AT Time [8] , Node [0] frame with seq_num = [0] and payload [$0]I hope$] and trailer [00010001] , Modified [22] , Lost No  , Duplicate [0] , Delay [0]
+Time out event at time [11.5] Node [0] for frame with seq_num [2]
+ At time 11.5 Node[0]  Introducing channel error with code = 0010
+AT Time [12] , Node [0] frame with seq_num = [2] and payload [$2_networks$] and trailer [10100101] , Modified [-1] , Lost No  , Duplicate [0] , Delay [0]
+ At time 12 Node[0]  Introducing channel error with code = 0000
+AT Time [12.5] , Node [0] frame with seq_num = [3] and payload [$3_simulator$] and trailer [01000001] , Modified [-1] , Lost No  , Duplicate [0] , Delay [0]
+ At time 12.5 Node[0]  Introducing channel error with code = 1000
+AT Time [13] , Node [0] frame with seq_num = [0] and payload [$0_I hoPe$] and trailer [00010001] , Modified [58] , Lost No  , Duplicate [0] , Delay [0]
+Uploading payload = [2_networks] seq_num = [2] to network layer 
+At time [13.5] Node [1] Sending ACK with number [3]  ,loss Yes
+Uploading payload = [3_simulator] seq_num = [3] to network layer 
+At time [14] Node [1] Sending ACK with number [0]  ,loss NO
+At time [14.5] Node [1] Sending NACK with number [0]  ,loss Yes
+ At time 15 Node[0]  Introducing channel error with code = 1100
+AT Time [15.5] , Node [0] frame with seq_num = [1] and payload [$1_you enjoy$] and trailer [10000001] , Modified [5] , Lost Yes  , Duplicate 0 , Delay [0] 
+AT Time [15.5] , Node [0] frame with seq_num = [1] and payload [$1_you enjoy$] and trailer [10000001] , Modified [5] , Lost Yes  , Duplicate 2 , Delay [0.1] 
  At time 15.5 Node[0]  Introducing channel error with code = 0000
-AT Time 16 , Node 0 frame with seq_num = 3 and payload $(plants of the division Magnoliophyta,  is to facilitate reproduction,$ and trailer 10100001 , Modified -1 , Lost No  , Duplicate 0 , Delay 0
- At time 16 Node[0]  Introducing channel error with code = 0001
-AT Time 16.5 , Node 0 frame with seq_num = 4 and payload $The biological function of /$//a flower  $ and trailer 10110111 , Modified -1 , Lost No  , Duplicate 0 , Delay 4
- At time 16.5 Node[0]  Introducing channel error with code = 0100
-Uploading payload = is the reproductive$ structure found  also called/ angiosperms$). seq_num = 2 to network layer 
-AT Time 17 , Node 0 frame with seq_num = 0 and payload $usually by providing a mechanism for Flowers may facilitate outcrossing/$$ and trailer 00010001 , Modified -1 , Lost Yes  , Duplicate 0 , Delay 0
-At time 17 Node 1 Sending ACK with number 3 ,loss NOis sender0
-Uploading payload = (plants of the division Magnoliophyta,  is to facilitate reproduction, seq_num = 3 to network layer 
-At time 17.5 Node 1 Sending ACK with number 4 ,loss NOis sender0
- At time 18 Node[0]  Introducing channel error with code = 0000
-AT Time 18.5 , Node 0 frame with seq_num = 1 and payload $/$/$the union of sperm with eggs.$ and trailer 01110000 , Modified -1 , Lost No  , Duplicate 0 , Delay 0
-Uploading payload = The biological function of $/a flower   seq_num = 4 to network layer 
-At time 22 Node 1 Sending ACK with number 0 ,loss NOis sender0
-Time out event at time 27 Node 0 for frame with seq_num0
- At time 27 Node[0]  Introducing channel error with code = 0100
-AT Time 27.5 , Node 0 frame with seq_num = 0 and payload $usually by providing a mechanism for Flowers may facilitate outcrossing/$$ and trailer 00010001 , Modified -1 , Lost No  , Duplicate 0 , Delay 0
- At time 27.5 Node[0]  Introducing channel error with code = 0000
-AT Time 28 , Node 0 frame with seq_num = 1 and payload $/$/$the union of sperm with eggs.$ and trailer 01110000 , Modified -1 , Lost No  , Duplicate 0 , Delay 0
-Uploading payload = usually by providing a mechanism for Flowers may facilitate outcrossing$ seq_num = 0 to network layer 
-At time 29 Node 1 Sending ACK with number 1 ,loss NOis sender0
-Uploading payload = $$the union of sperm with eggs. seq_num = 1 to network layer 
-At time 29.5 Node 1 Sending ACK with number 2 ,loss NOis sender0
+AT Time [16] , Node [0] frame with seq_num = [2] and payload [$2_my/$//company$] and trailer [10010011] , Modified [-1] , Lost No  , Duplicate [0] , Delay [0]
+Time out event at time [23] Node [0] for frame with seq_num [0]
+ At time 23 Node[0]  Introducing channel error with code = 1000
+AT Time [23.5] , Node [0] frame with seq_num = [0] and payload [$0_I hope$] and trailer [00010001] , Modified [-1] , Lost No  , Duplicate [0] , Delay [0]
+ At time 23.5 Node[0]  Introducing channel error with code = 1100
+AT Time [24] , Node [0] frame with seq_num = [1] and payload [$1_you enjoy$] and trailer [10000001] , Modified [5] , Lost Yes  , Duplicate 0 , Delay [0] 
+AT Time [24] , Node [0] frame with seq_num = [1] and payload [$1_you enjoy$] and trailer [10000001] , Modified [5] , Lost Yes  , Duplicate 2 , Delay [0.1] 
+ At time 24 Node[0]  Introducing channel error with code = 0000
+AT Time [24.5] , Node [0] frame with seq_num = [2] and payload [$2_my/$//company$] and trailer [10010011] , Modified [-1] , Lost No  , Duplicate [0] , Delay [0]
+Uploading payload = [0_I hope] seq_num = [0] to network layer 
+At time [25] Node [1] Sending ACK with number [1]  ,loss NO
+ At time 26 Node[0]  Introducing channel error with code = 1010
+AT Time [26.5] , Node [0] frame with seq_num = [3] and payload [&3_Good By$] and trailer [10111110] , Modified [6] , Lost No  , Duplicate 1 , Delay [0] 
+AT Time [26.5] , Node [0] frame with seq_num = [3] and payload [&3_Good By$] and trailer [10111110] , Modified [6] , Lost No  , Duplicate 2 , Delay [0.1] 
+Time out event at time [34] Node [0] for frame with seq_num [1]
+ At time 34 Node[0]  Introducing channel error with code = 1100
+AT Time [34.5] , Node [0] frame with seq_num = [1] and payload [$1_you enjoy$] and trailer [10000001] , Modified [-1] , Lost No  , Duplicate [0] , Delay [0]
+ At time 34.5 Node[0]  Introducing channel error with code = 0000
+AT Time [35] , Node [0] frame with seq_num = [2] and payload [$2_my/$//company$] and trailer [10010011] , Modified [-1] , Lost No  , Duplicate [0] , Delay [0]
+ At time 35 Node[0]  Introducing channel error with code = 1010
+AT Time [35.5] , Node [0] frame with seq_num = [3] and payload [$3_Good`By$] and trailer [10111110] , Modified [57] , Lost No  , Duplicate 1 , Delay [0] 
+AT Time [35.5] , Node [0] frame with seq_num = [3] and payload [$3_Good`By$] and trailer [10111110] , Modified [57] , Lost No  , Duplicate 2 , Delay [0.1] 
+Uploading payload = [1_you enjoy] seq_num = [1] to network layer 
+At time [36] Node [1] Sending ACK with number [2]  ,loss NO
+Uploading payload = [2_my$/company] seq_num = [2] to network layer 
+At time [36.5] Node [1] Sending ACK with number [3]  ,loss NO
+At time [37] Node [1] Sending NACK with number [3]  ,loss NO
+At time [37.1] Node [1] Sending NACK with number [3]  ,loss Yes
+ At time 38 Node[0]  Introducing channel error with code = 1010
+AT Time [38.5] , Node [0] frame with seq_num = [3] and payload [$3_Good By$] and trailer [10111110] , Modified [-1] , Lost No  , Duplicate [0] , Delay [0]
+Uploading payload = [3_Good By] seq_num = [3] to network layer 
+At time [40] Node [1] Sending ACK with number [0]  ,loss NO

@@ -50,7 +50,9 @@ protected:
   int the_sender;
   int current_index;
 
-    virtual void initialize();
+  std::string loss_error;
+  int count_for_loss;
+  virtual void initialize();
   virtual void handleMessage(cMessage *msg);
 };
 
